@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공문 자동생성 — 망남 신활력증진사업</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 48px 44px 40px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .badge {
+    background: #1a4fc4;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+  }
+
+  .sub {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 24px 0;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .month-btn {
+    background: #f4f6fa;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .month-btn:hover {
+    background: #e8edf8;
+    color: #1a4fc4;
+  }
+
+  .month-btn.active {
+    background: #1a4fc4;
+    color: #fff;
+    border-color: #1a4fc4;
+  }
+
+  .preview-box {
+    background: #f8f9fc;
+    border: 1px solid #e4e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  .preview-box .highlight {
+    color: #1a4fc4;
+    font-weight: 700;
+  }
+
+  .preview-box .row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .preview-box .key {
+    color: #999;
+    min-width: 60px;
+  }
+
+  .btn-generate {
+    width: 100%;
+    background: #1a4fc4;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-generate:hover { background: #1540a8; }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { background: #b0bec5; cursor: not-allowed; }
+
+  .status {
+    margin-top: 16px;
+    font-size: 13px;
+    text-align: center;
+    color: #888;
+    min-height: 20px;
+  }
+
+  .status.success { color: #2e7d32; font-weight: 600; }
+  .status.error   { color: #c62828; }
+
+  .footer-note {
+    margin-top: 28px;
+    font-size: 12px;
+    color: #bbb;
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div>
+      <div class="badge">망남 신활력증진사업</div>
+      <h1 style="margin-top:8px;">월별 공문 자동생성</h1>
+      <p class="sub">보고월을 선택하면 공문 Word 파일이 바로 다운로드됩니다</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <label>보고월 선택</label>
+  <div class="month-grid" id="monthGrid">
+    <!-- 1~12월 버튼 -->
+  </div>
+
+  <div class="preview-box" id="previewBox">
+    <div class="row"><span class="key">보고월</span><span id="prevMonth" class="highlight">—</span></div>
+    <div class="row"><span class="key">제목</span><span id="prevTitle">월을 선택해주세요</span></div>
+    <div class="row"><span class="key">시행번호</span><span id="prevSihaeng">—</span></div>
+    <div class="row"><span class="key">출력파일</span><span id="prevFile">—</span></div>
+  </div>
+
+  <button class="btn-generate" id="btnGenerate" disabled onclick="generate()">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2v10m0 0 3-3m-3 3-3-3M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    공문 다운로드
+  </button>
+  <p class="status" id="status"></p>
+
+  <p class="footer-note">
+    사회혁신교육원 사회적협동조합<br>
+    공동체팀장 김지희 / 대표 김일영
+  </p>
+</div>
+
+<script>
+// ── 월 버튼 생성 ──────────────────────────
+const grid = document.getElementById('monthGrid');
+const now = new Date();
+let selectedMonth = null;
+
+for (let m = 1; m <= 12; m++) {
+  const btn = document.createElement('button');
+  btn.className = 'month-btn';
+  btn.textContent = m + '월';
+  btn.dataset.month = m;
+  if (m === now.getMonth() + 1) {
+    btn.classList.add('active');
+    selectedMonth = m;
+  }
+  btn.addEventListener('click', () => selectMonth(m));
+  grid.appendChild(btn);
+}
+
+// 초기 선택 반영
+if (selectedMonth) updatePreview(selectedMonth);
+
+function selectMonth(m) {
+  selectedMonth = m;
+  document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-month="${m}"]`).classList.add('active');
+  updatePreview(m);
+  document.getElementById('btnGenerate').disabled = false;
+  document.getElementById('status').textContent = '';
+}
+
+function updatePreview(m) {
+  const year = now.getFullYear();
+  const next = m === 12 ? 1 : m + 1;
+  const submitYear = m === 12 ? year + 1 : year;
+  const submitMonth = String(next).padStart(2, '0');
+  const submitDate = `${submitYear}${submitMonth}03`;
+  const submitText = `${submitYear}. ${next}. 3.`;
+
+  document.getElementById('prevMonth').textContent = `${year}년 ${m}월`;
+  document.getElementById('prevTitle').textContent = `${year}년 ${m}월 앵커조직 활동실적 및 ${next}월 활동계획 보고`;
+  document.getElementById('prevSihaeng').textContent = `사교원-${submitDate}-1  ( ${submitText} )  접수`;
+  document.getElementById('prevFile').textContent = `공문_${year}_${m}월.docx`;
+}
+
+// ── Word 파일 생성 ──────────────────────────
+async function generate() {
+  if (!selectedMonth) return;
+
+  const btn = document.getElementById('btnGenerate');
+  const statusEl = document.getElementById('status');
+  btn.disabled = true;
+  statusEl.className = 'status';
+  statusEl.textContent = '⏳ 공문 생성 중...';
+
+  try {
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, BorderStyle, WidthType, VerticalAlign, ShadingType, Footer
+    } = docx;
+
+    const year = now.getFullYear();
+    const m = selectedMonth;
+    const next = m === 12 ? 1 : m + 1;
+    const submitYear = m === 12 ? year + 1 : year;
+    const submitDate = `${submitYear}${String(next).padStart(2,'0')}03`;
+    const submitText = `${submitYear}. ${next}. 3.`;
+
+    const PAGE_W = 11906, MARGIN = 1134;
+    const CONTENT_W = PAGE_W - MARGIN * 2;
+
+    const bdr = { style: BorderStyle.SINGLE, size: 4, color: "000000" };
+    const borders = { top: bdr, bottom: bdr, left: bdr, right: bdr };
+
+    const T = (text, size=22, bold=false) =>
+      new TextRun({ text, font: "맑은 고딕", size, bold });
+
+    const P = (children, spacing={}, border={}, align=null, indent=null) =>
+      new Paragraph({
+        spacing: { line: 360, lineRule: "auto", ...spacing },
+        border, alignment: align,
+        indent: indent || undefined,
+        children: Array.isArray(children) ? children : [children]
+      });
+
+    const bottomTable = new Table({
+      width: { size: CONTENT_W, type: WidthType.DXA },
+      columnWidths: [CONTENT_W/2, CONTENT_W/2],
+      rows: [
+        new TableRow({ children: [
+          new TableCell({ borders, width:{size:CONTENT_W/2,type:WidthType.DXA},
+            shading:{fill:"EEEEEE",type:ShadingType.CLEAR}, verticalAlign:VerticalAlign.CENTER,
+            children:[P(T("공동체팀장  김지희",20),{},{},AlignmentType.CENTER)] }),
+          new TableCell({ borders, width:{size:CONTENT_W/2,type:WidthType.DXA},
+            shading:{fill:"EEEEEE",type:ShadingType.CLEAR}, verticalAlign:VerticalAlign.CENTER,
+            children:[P(T("대표  김일영",20),{},{},AlignmentType.CENTER)] }),
+        ]}),
+        new TableRow({ children: [
+          new TableCell({ borders, columnSpan:2, width:{size:CONTENT_W,type:WidthType.DXA},
+            children:[P(T(`시행  사교원-${submitDate}-1  ( ${submitText} )  접수`,20))] }),
+        ]}),
+        new TableRow({ children: [
+          new TableCell({ borders, columnSpan:2, width:{size:CONTENT_W,type:WidthType.DXA},
+            children:[
+              P(T("우 59111  전라남도 완도군 완도읍 군내길 209-1, 2층  /  http://sakyowon.co.kr",18)),
+              P(T("전화번호  061-555-0631  팩스번호  042-825-3745  /  mangnam.anchor@gmail.com  /  공개",18)),
+            ] }),
+        ]}),
+      ]
+    });
+
+    const items = [
+      "앵커조직 기본 현황",
+      `${year}년 ${m}월 사업별 추진 실적과 ${next}월 추진 계획`,
+      "사업별 세부 추진 내용",
+      "개인별 업무 실적 및 계획",
+      "앵커조직 운영비 총괄 집행 내역(누계)",
+      "제작물 및 성과물",
+    ];
+
+    const children = [
+      P(T("수신    완도군수(지역개발과장)"), {before:100,after:0}),
+      P(T("(경유)"), {before:0,after:0}),
+      P(T(`제목    ${year}년 ${m}월 앵커조직 활동실적 및 ${next}월 활동계획 보고`, 22, true),
+        {before:0,after:240},
+        {bottom:{style:BorderStyle.THICK,size:12,color:"000000"}}),
+      P(T("1. 귀 청의 무궁한 발전을 기원합니다."), {before:120,after:0}),
+      P(T(`2. 「완도 망남생활권 어촌신활력 증진사업」 앵커조직의 ${year}년 ${m}월 활동실적 및 ${next}월 활동계획을 보고합니다.(붙임 자료 참조)`), {before:120,after:0}),
+      ...items.map(item => P(T(`- ${item}`), {before:0,after:0}, {}, null, {left:720})),
+      P(T(""), {before:240,after:0}),
+      P(T(`붙임  1. 망남생활권 앵커조직 ${year}년 ${m}월 실적보고 및 ${next}월 업무계획.`), {before:0,after:0}),
+      P(T("      2. 앵커 직원 주간업무일지 묶음.  끝."), {before:0,after:0}),
+    ];
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            size: { width: PAGE_W, height: 16838 },
+            margin: { top: MARGIN, bottom: 800, left: MARGIN, right: MARGIN }
+          }
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              P(T("사회혁신교육원사회적협동조합", 36, true), {before:0,after:160}, {}, AlignmentType.CENTER),
+              bottomTable,
+            ]
+          })
+        },
+        children,
+      }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `공문_${year}_${m}월.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    statusEl.className = 'status success';
+    statusEl.textContent = `✅ 공문_${year}_${m}월.docx 다운로드 완료!`;
+
+  } catch (e) {
+    statusEl.className = 'status error';
+    statusEl.textContent = '❌ 오류: ' + e.message;
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// 초기 버튼 활성화
+if (selectedMonth) document.getElementById('btnGenerate').disabled = false;
+</script>
+</body>
+</html>
