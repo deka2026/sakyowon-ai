@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>김일영 — 연대지능 AI활동가</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #fff;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .tagline {
+      font-size: 1rem;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      border-radius: 0.625rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+
+    .link-btn:hover { opacity: 0.82; }
+
+    .link-btn.wiki {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .link-btn.github {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .link-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.78rem;
+      color: #aaa;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="avatar" aria-hidden="true">김</div>
+
+    <h1>김일영</h1>
+    <p class="tagline">
+      사교원 「연대지능 AI활동가 생태계 구축」 기획자<br>
+      AI를 도구로, 현장을 바꾸는 활동가를 키웁니다.
+    </p>
+
+    <nav class="links">
+      <a class="link-btn wiki"
+         href="https://wiki.sakyowon.co.kr"
+         target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">📖</span>
+        위키 — wiki.sakyowon.co.kr
+      </a>
+      <a class="link-btn github"
+         href="https://github.com/deka2026/sakyowon-ai"
+         target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">🐙</span>
+        GitHub — sakyowon-ai
+      </a>
+    </nav>
+
+    <footer>사교원 연대지능 생태계 조성 사업 · 2026</footer>
+  </main>
+</body>
+</html>
