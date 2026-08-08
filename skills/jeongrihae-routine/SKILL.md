@@ -91,12 +91,13 @@ tags: [실천기술, ...]
 
 1. 위키 클론에서 브랜치: `lesson/<주제>-YYYYMMDD`
 2. 커밋 (PR 제목 형식: `[문서] 제목`) → `git push -u origin <브랜치>`
-3. PR 생성·머지 — gh CLI 사용 (2026-08-08 설치됨):
+3. PR 생성·머지 — gh CLI 사용 (2026-08-08 설치·deka2026 인증 완료, keyring):
    ```powershell
    gh pr create --repo haeory-cyber/solidarity-intelligence-wiki --title "[문서] <제목>" --body "<한두 줄 + author/정리자 표기>"
    gh pr merge <번호> --repo haeory-cyber/solidarity-intelligence-wiki --squash
    ```
-   gh 미인증/부재 시 폴백: GCM 토큰을 `git credential fill`로 꺼내(반드시 **cmd stdin 리다이렉트** 경유 — PS 파이프는 실패함) REST API 호출:
+   gh 재인증이 필요해지면(비대화식 디바이스 플로우 요령): `Start-Process gh -ArgumentList 'auth','login','--web','--hostname','github.com','--git-protocol','https' -RedirectStandardError $log -NoNewWindow`로 백그라운드 기동 → 로그에서 일회용 코드를 읽어 사용자에게 URL(https://github.com/login/device)과 함께 전달 → 사용자가 브라우저 승인하면 자동 완료.
+   gh 부재 시 폴백: GCM 토큰을 `git credential fill`로 꺼내(반드시 **cmd stdin 리다이렉트** 경유 — PS 파이프는 실패함) REST API 호출:
    ```powershell
    [System.IO.File]::WriteAllText("$env:TEMP\credq.txt", "protocol=https`nhost=github.com`n`n")
    $out = cmd /c "git credential fill < `"$env:TEMP\credq.txt`"" 2>$null
