@@ -1,0 +1,11 @@
+REPL
+%%%
+ 각 사업의 단계적 준공 일정을 가정하여 연말 기준 누적 가동용량을 산출하였다.
+%%%
+ 각 사업의 단계적 준공 일정을 가정하여 연말 기준 누적 가동용량을 산출하였다. (여기에 덧붙일 문장)
+@@@
+INS_AFTER_P
+%%%
+이 텍스트를 포함한 문단 뒤에
+%%%
+<hp:p id="2147483648" paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="16"><hp:t> 새로 삽입되는 본문 문단</hp:t></hp:run><hp:run charPrIDRef="21"/></hp:p>
