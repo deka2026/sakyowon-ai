@@ -1,7 +1,8 @@
 param(
   [Parameter(Mandatory=$true)][string]$SectionPath,
   [Parameter(Mandatory=$true)][string]$EditsPath,
-  [switch]$NoQuoteNormalize
+  [switch]$NoQuoteNormalize,
+  [switch]$KeepLineSegs
 )
 $ErrorActionPreference = 'Stop'
 
@@ -58,6 +59,15 @@ if ($errors.Count -gt 0) {
   Write-Output "FAILED CHECKS (file NOT written):"
   $errors | ForEach-Object { Write-Output " - $_" }
   exit 1
+}
+
+# Strip ALL layout caches so Hangul recomputes line layout on open.
+# Stale linesegarray on paragraphs whose text length changed renders as
+# overlapping/garbled lines (verified 2026-08-08). Absence is always safe.
+if (-not $KeepLineSegs) {
+  $n = [regex]::Matches($xml, '<hp:linesegarray>').Count
+  $xml = [regex]::Replace($xml, '<hp:linesegarray>.*?</hp:linesegarray>', '')
+  Write-Output "Stripped $n hp:linesegarray layout caches (pass -KeepLineSegs to disable)."
 }
 
 [System.IO.File]::WriteAllText($SectionPath, $xml, $utf8NoBom)

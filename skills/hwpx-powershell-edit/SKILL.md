@@ -59,7 +59,7 @@ INS_AFTER_P
 <!-- 빈 줄(간격) -->
 <hp:p id="2147483648" paraPrIDRef="17" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="17"/></hp:p>
 ```
-- `<hp:linesegarray>`(레이아웃 캐시)는 **생략 가능** — 한글이 열 때 재계산한다.
+- `<hp:linesegarray>`(레이아웃 캐시)는 **생략 가능** — 한글이 열 때 재계산한다. **반대로, 텍스트 길이를 바꾼 문단에 원본 캐시가 남아 있으면 낡은 줄 좌표에 겹쳐 그려져 문단이 깨져 보인다** (2026-08-08 실증). apply_edits.ps1이 기본으로 전체 캐시를 제거하므로 그대로 두면 안전하다.
 - 표(`<hp:tbl>`) 행 추가는 rowCnt 갱신 등 파손 위험이 커서 피하고, 표 밖 주석 문단으로 대신할 것.
 
 ### 4. 적용 → 검증 → 재패키징
