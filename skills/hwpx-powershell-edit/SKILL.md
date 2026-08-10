@@ -1,78 +1,137 @@
 ---
 name: hwpx-powershell-edit
-description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정하는 스킬. .hwpx 파일의 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 재패키징이 필요할 때 사용. HWP(구형 바이너리)는 불가 — hwpx만 지원.
+description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정하는 스킬. .hwpx 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 수정 부분 빨간색 표시(교정본), 재패키징이 필요할 때 사용. 대량 교정(수십~수백 건)에는 인덱스 기반 경로를 쓴다. HWP(구형 바이너리)는 불가 — hwpx만 지원.
 ---
 
 # HWPX 문서 편집 (PowerShell 전용)
 
-`.hwpx`는 ZIP 안에 XML이 든 포맷이다(OWPML). 본문은 `Contents/section0.xml`의 `<hp:t>` 요소에 있다.
+`.hwpx`는 ZIP 안에 XML이 든 포맷이다(OWPML). 본문은 `Contents/section0.xml`의 `<hp:t>` 요소에 있고, 글자모양은 `Contents/header.xml`의 `<hh:charPr>`에 있다.
 이 스킬은 Python·pandoc·한글 프로그램 없이 .NET(System.IO.Compression + XmlDocument)만으로 편집한다.
-2026-08-08 전남광주 메가프로젝트 문서 21건 편집으로 실증됨.
 
-## 절차 (4단계)
+실증: 2026-08-08 전남광주 메가프로젝트 문서 21건 편집 / 2026-08-10 시민공론장 발제문 v4→v5 교정 **102건 + 문단 삽입 3블록, 빨간색 표시 116런, 실패 0**.
+
+## 두 가지 경로 — 어느 쪽을 쓸 것인가
+
+| | A. 인덱스 기반 (`apply_by_index.ps1`) | B. 원문 매칭 (`apply_edits.ps1`) |
+|---|---|---|
+| 적합 | **교정 다건**(10건 이상), 짧은 조각 수정, 표 셀 수정 | 단건~소수, 문단 전체 교체 |
+| 지정 방식 | 덤프의 `[N]` 인덱스 + 그 안의 조각 | 문서 전체에서 유일한 원문 문자열 |
+| 강점 | 같은 문자열이 여러 번 나와도 안전(`불필요` 같은 표 셀), 앞뒤 공백 신경 안 씀 | 인덱스 관리 불필요 |
+| 빨간색 표시 | **지원** | 미지원 |
+
+기본은 **A**를 쓴다. 아래 절차는 A 기준이다.
+
+---
+
+## 절차
 
 ### 1. 추출 + 텍스트 덤프
 ```powershell
 powershell -NoProfile -File scripts\hwpx_dump.ps1 -HwpxPath "원본.hwpx" -WorkDir "작업폴더"
 ```
-- `작업폴더\unpacked\`에 압축 해제, `작업폴더\text_dump.txt`에 `[인덱스] 텍스트` 형식으로 전체 문단 덤프
-- 덤프를 Read로 읽고 수정 지점을 매핑한다. HWPX는 DOCX와 달리 **run 파편화가 거의 없어** 문단 전체가 한 `<hp:t>`에 들어있는 경우가 많다.
+- `작업폴더\unpacked\`에 압축 해제, `작업폴더\text_dump.txt`에 `[인덱스] 텍스트` 형식으로 전체 텍스트런 덤프
+- 인덱스 = `<hp:t>` 정규식 매치 순번. 표 셀도 각각 하나의 인덱스를 갖는다.
+- **덤프 파일의 줄 번호와 `[N]`은 1 차이가 난다** (줄 1 = `[0]`). Read 도구로 볼 때 줄 번호를 인덱스로 착각하는 것이 최다 실수 — 반드시 대괄호 안 숫자를 쓸 것.
 
-### 2. 편집 데이터 파일 작성 (edits.txt)
+### 2. (교정본이면) 빨간색 글자모양 준비
+```powershell
+powershell -NoProfile -File scripts\add_red_charpr.ps1 -HeaderPath "작업폴더\unpacked\Contents\header.xml" -Offset 41
+```
+- 기존 charPr 전체(id 0..N-1)를 복제해 `textColor="#FF0000"`으로 바꾼 사본을 id `N..2N-1`에 추가하고 `itemCnt`를 2배로 갱신한다.
+- `-Offset`은 **원본 itemCnt와 같아야 한다** (다르면 스크립트가 중단). 덤프 후 `<hh:charProperties itemCnt="?">`를 먼저 확인할 것.
+- 이렇게 하면 `red(N) = N + Offset`이라는 단순 규칙이 서고, 글자 크기·글꼴은 원본 그대로 유지된다.
+
+### 3. 편집 데이터 파일 작성
 블록 구분자 `@@@`, 파트 구분자 `%%%` (각각 단독 줄). 이스케이프 불필요.
 
 ```
-REPL
+REPLIN <인덱스>
 %%%
-<찾을 원문 — 문단 전체를 그대로 복사, 앞 공백 포함>
+<새 조각>
 %%%
-<바꿀 새 텍스트>
+<바꿀 옛 조각 — 해당 인덱스 안에서 정확히 1회 나와야 함>
 @@@
-INS_BEFORE_P
+SET <인덱스>
 %%%
-<앵커 텍스트 — 이 텍스트를 포함한 문단 '앞'에 삽입>
+<텍스트런 전체를 대체할 새 텍스트>
 %%%
-<삽입할 hp:p XML 한 줄>
+<검증용 현재 전체 텍스트(선택) — 다르면 실패>
 @@@
-INS_AFTER_P
+INS_AFTER <인덱스>
 %%%
-<앵커 텍스트 — 이 텍스트를 포함한 문단 '뒤'에 삽입>
+<삽입할 hp:p XML 한 줄(여러 문단 연속 가능)>
+@@@
+INS_BEFORE <인덱스>
 %%%
 <삽입할 hp:p XML 한 줄>
 ```
 
-**반드시 지킬 것:**
-- REPL의 원문은 덤프에서 **그대로 복사** (앞 공백, 특수문자 포함). 스크립트가 매치 1회를 강제 검증하므로 안 맞으면 실패 목록이 출력된다.
-- 새 텍스트에 `&` `<` `>` 금지 (XML). 「」 · — → ≒ ~ 등은 그대로 사용 가능.
-- **따옴표 규약 먼저 확인**: 원본이 스트레이트(U+0027)인지 컬리(U+2018/2019)인지 스크립트가 검사해 알려준다. apply 스크립트는 컬리→스트레이트 자동 정규화 옵션이 기본 켜짐 (원본이 컬리면 `-NoQuoteNormalize`).
+**반드시 지킬 것**
+- `REPLIN`을 기본으로 쓴다. 조각만 지정하므로 앞뒤 공백·긴 문단을 그대로 옮겨 적는 위험이 없다.
+- 조각이 0회 또는 2회 이상이면 그 건은 실패로 보고되고 **파일을 아예 쓰지 않는다**. 실패 목록에 실제 텍스트가 찍히므로 그걸로 인덱스를 교정한다.
+- 새 텍스트에 `<` `>` 금지, `&`는 `&amp;` 형태로만 허용. 「」 · — → ≒ ~ ² ❶ 등은 그대로 사용 가능.
+- **원본이 이미 `&amp;`를 담고 있으면**(예: `O&amp;M`) 옛 조각·새 조각 모두 `&amp;`로 적어야 한다. 덤프는 XML 원문을 그대로 보여준다.
 
-### 3. 삽입용 문단 XML 템플릿
-**paraPrIDRef/charPrIDRef는 문서마다 다르다** — 반드시 대상 문서에서 같은 역할의 기존 문단을 찾아 ID를 확인한 뒤 템플릿에 대입할 것. (전남광주 문서 기준 예: 제목 18/23+2, 본문 21/16, 글머리 22/24, 공백 17/17)
+### 4. 삽입용 문단 XML 템플릿
+**paraPrIDRef/charPrIDRef는 문서마다 다르다.** 대상 문서에서 같은 역할의 기존 문단을 찾아 ID를 확인한 뒤 대입할 것 — `scripts\show_paragraph.ps1`로 특정 인덱스의 문단 XML을 통째로 볼 수 있다.
+
+```powershell
+& scripts\show_paragraph.ps1 -SectionPath "...\section0.xml" -Idx @(34,189,359)
+```
 
 ```xml
-<!-- 소제목 -->
-<hp:p id="2147483648" paraPrIDRef="18" styleIDRef="15" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="23"><hp:t>□</hp:t></hp:run><hp:run charPrIDRef="2"><hp:t> 제목텍스트</hp:t></hp:run><hp:run charPrIDRef="23"><hp:t> </hp:t></hp:run><hp:run charPrIDRef="18"/></hp:p>
+<!-- 절 제목 -->
+<hp:p id="0" paraPrIDRef="20" styleIDRef="15" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="2"><hp:t>제목</hp:t></hp:run></hp:p>
 <!-- 본문 -->
-<hp:p id="2147483648" paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="16"><hp:t> 본문텍스트</hp:t></hp:run><hp:run charPrIDRef="21"/></hp:p>
-<!-- 글머리(박스 불릿) -->
-<hp:p id="2147483648" paraPrIDRef="22" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="24"><hp:t>     * 불릿텍스트</hp:t></hp:run></hp:p>
-<!-- 빈 줄(간격) -->
-<hp:p id="2147483648" paraPrIDRef="17" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="17"/></hp:p>
+<hp:p id="0" paraPrIDRef="3" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="16"><hp:t> 본문</hp:t></hp:run></hp:p>
+<!-- 목록/개조식 -->
+<hp:p id="0" paraPrIDRef="22" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="16"><hp:t>1. 항목</hp:t></hp:run></hp:p>
 ```
-- `<hp:linesegarray>`(레이아웃 캐시)는 **생략 가능** — 한글이 열 때 재계산한다. **반대로, 텍스트 길이를 바꾼 문단에 원본 캐시가 남아 있으면 낡은 줄 좌표에 겹쳐 그려져 문단이 깨져 보인다** (2026-08-08 실증). apply_edits.ps1이 기본으로 전체 캐시를 제거하므로 그대로 두면 안전하다.
-- 표(`<hp:tbl>`) 행 추가는 rowCnt 갱신 등 파손 위험이 커서 피하고, 표 밖 주석 문단으로 대신할 것.
+- 삽입 문단을 빨간색으로 하려면 `charPrIDRef`에 **red(N) = N + Offset** 값을 직접 쓴다(예: 16 → 57).
+- `<hp:linesegarray>`(레이아웃 캐시)는 **넣지 말 것** — 한글이 열 때 재계산한다. 텍스트 길이가 바뀐 문단에 낡은 캐시가 남으면 줄이 겹쳐 그려진다(2026-08-08 실증). apply 스크립트가 기본으로 전체 캐시를 제거한다.
+- 표(`<hp:tbl>`) **행 추가는 하지 말 것** — rowCnt 갱신 등 파손 위험. 셀 **텍스트** 수정은 REPLIN으로 안전하다. 빈 셀 채우기·행 추가는 한글에서 사람이 할 일로 남긴다.
 
-### 4. 적용 → 검증 → 재패키징
+### 5. 적용
 ```powershell
-powershell -NoProfile -File scripts\apply_edits.ps1 -SectionPath "작업폴더\unpacked\Contents\section0.xml" -EditsPath "edits.txt"
-powershell -NoProfile -File scripts\hwpx_repack.ps1 -SourceHwpx "원본.hwpx" -SectionPath "작업폴더\unpacked\Contents\section0.xml" -OutHwpx "수정본.hwpx"
+& scripts\apply_by_index.ps1 -SectionPath "작업폴더\unpacked\Contents\section0.xml" -EditsPath "edits.txt"
 ```
-- apply가 전 건 매치 검증 후 실패 시 파일을 쓰지 않는다.
-- repack이 XmlDocument 유효성 검증 후, 원본을 복사해 section0.xml만 교체한다(mimetype 등 나머지 엔트리 보존). **원본은 덮어쓰지 말고 새 파일명으로 출력**할 것.
-- 재패키징 후 새 파일에서 텍스트를 재추출해 수정 지점을 눈으로 재확인할 것.
+- 빨간색을 끄려면 `-NoRed`, 캐시를 보존하려면 `-KeepLineSegs`, 오프셋이 다르면 `-RedOffset N`.
+- 동작: 전 건 검증 → 겹침 검사 → **내림차순 위치로 스플라이스**(인덱스 밀림 없음) → 캐시 제거 → XmlDocument 유효성 검증 → 기록. 한 건이라도 실패하면 아무것도 쓰지 않는다.
+- 빨간색 모드에서는 런을 3분할한다: `앞부분(원래색) + 수정부분(빨강) + 뒷부분(원래색)`.
+
+**중요 — 실행 순서**: REPLIN/SET는 런을 분할하므로 `<hp:t>` 개수가 늘어난다. 따라서
+1. **REPLIN/SET만 담은 파일을 먼저 1회 실행**
+2. **다시 덤프해 새 인덱스를 확인한 뒤** INS_AFTER/INS_BEFORE 파일을 실행
+순서를 지킬 것. 한 파일에 섞으면 삽입 위치가 어긋난다.
+
+### 6. 재패키징 + 검증
+```powershell
+& scripts\hwpx_repack_multi.ps1 -SourceHwpx "원본.hwpx" -UnpackedDir "작업폴더\unpacked" -OutHwpx "수정본.hwpx"
+```
+- 기본으로 `Contents/section0.xml`과 `Contents/header.xml`을 함께 교체한다. **빨간색 표시를 했으면 header.xml을 반드시 같이 넣어야 한다** — section만 바꾸면 존재하지 않는 charPr을 참조하게 된다. (구 `hwpx_repack.ps1`은 section만 교체하므로 이 경우 쓰면 안 됨)
+- 나머지 엔트리(mimetype 등)는 원본을 복사해 보존한다. **원본은 덮어쓰지 말고 새 파일명으로 출력**할 것.
+- 재패키징 후 새 파일을 다시 덤프해, 반영돼야 할 문자열과 **사라져야 할 옛 문자열을 각각 카운트**해 확인한다(0이어야 할 것이 0인지까지).
+
+---
 
 ## 함정 (실전에서 걸린 것들)
-1. **PS 5.1 스크립트 인코딩**: BOM 없는 .ps1의 한국어 리터럴은 깨진다. 한국어는 전부 데이터 파일(edits.txt)에 두고 .ps1은 ASCII만 사용 — 이 스킬의 스크립트가 이미 그렇게 설계됨.
-2. **따옴표 불일치**: 웹/문서에서 복사한 컬리 따옴표(‘’)와 원본의 스트레이트(')가 달라 매치 실패하는 것이 최다 실패 원인.
-3. `Preview/PrvText.txt`(미리보기 캐시)는 갱신 안 해도 무방 — 한글이 저장 시 재생성.
-4. 완료 기준: XML 유효 + 재추출 검증까지. 최종 서식은 한글에서 육안 확인 권장.
+
+1. **덤프 줄 번호 ≠ 인덱스** (줄 N = `[N-1]`). 2026-08-10 교정에서 102건 중 8건이 이 착오였다 — 검증기가 전부 잡아냈다.
+2. **비분리 공백(U+00A0)**: 한글에서 작성한 문서에는 일반 공백처럼 보이는 NBSP가 섞여 있다. 눈으로 똑같아 보이는데 매치가 0회면 이걸 의심하고, **NBSP를 피한 짧은 조각**으로 바꿔 지정한다. 문자 코드 비교로 확인:
+   ```powershell
+   ($s.ToCharArray() | ForEach-Object { [int]$_ }) -join ','
+   ```
+3. **PS 5.1 스크립트 인코딩**: BOM 없는 .ps1의 한국어 리터럴은 깨진다. 한국어는 전부 데이터 파일(edits.txt)에 두고 .ps1은 ASCII만 사용 — 이 스킬의 스크립트가 이미 그렇게 설계됨.
+4. **PS 5.1 배열 파라미터**: `-Idx 1,2,3`은 파싱 실패한다. `-Idx @(1,2,3)`으로 쓰고, `powershell -File` 대신 `& 스크립트`로 호출할 것.
+5. **따옴표 불일치**: 문서의 컬리(''  U+2018/2019)와 새로 타이핑한 스트레이트(')가 달라 매치 실패. `hwpx_dump.ps1`이 개수를 세어 알려주므로 먼저 확인하고, 통일이 목적이면 옛 조각에 컬리·새 조각에 스트레이트를 적어 REPLIN으로 바꾼다(`apply_by_index.ps1`은 자동 정규화를 하지 않으므로 의도대로 동작한다).
+6. `Preview/PrvText.txt`(미리보기 캐시)는 갱신 안 해도 무방 — 한글이 저장 시 재생성.
+7. **완료 기준**: XML 유효 + 재추출 검증(있어야 할 것/없어야 할 것 양방향)까지. 최종 서식은 한글에서 육안 확인 권장. 사용자가 한글에서 확인·정리(빨간색 제거 등)하고 저장하면 런이 다시 병합돼 `<hp:t>` 개수가 줄어드는 것이 정상이다.
+
+## 교정본 워크플로 요약
+
+```
+v4 원본 → 덤프 → (교정 목록 작성) → add_red_charpr → REPLIN 일괄 적용
+        → 재덤프 → INS 적용 → repack_multi → v5(빨간 교정본)
+        → 사람이 한글에서 검토·수락·빨간색 제거 → 최종본
+```
+빨간색은 "AI가 무엇을 건드렸는지"를 사람이 한눈에 확인하기 위한 것이다. 검토를 거치지 않은 자동 수정본을 최종본으로 삼지 말 것.
