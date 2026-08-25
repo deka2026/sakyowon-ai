@@ -23,8 +23,14 @@
 ### 3. 스킬 신설
 - `mangnam-coop-deploy` — 파란교실 등 mangnam-coop 문구 수정→빌드→gh-pages 배포→라이브 확인 절차와 함정 모음 (아래 파일 위치 참조)
 
+### 4. 레슨·위키배포 (08-25 정리 시)
+- 레슨: `문서/실천기술/AI와-함께-홈페이지-문구를-고치고-실제-반영까지-확인하기.md` (커밋 `2d19ebb`)
+- **PR #15 생성 완료**, 머지는 이번 세션 실행 권한 제약으로 미실행 — 편지(`e81ac3a`)로 지미에게 머지+라이브 반영 요청, www 동기화 방식(수동/타이머)도 함께 질문
+- 사용자가 직접 머지 가능: https://github.com/haeory-cyber/solidarity-intelligence-wiki/pull/15
+
 ## 미완료 / 다음 할 일
-- [ ] 서버 www 동기화가 수동인지 타이머인지 확정 필요 — 이사장님/후니님께 확인 (gh-pages push 후 미반영이면 `ssh root@sakyowon.co.kr` → `sudo bash /opt/sakyowon/src/deploy-www.sh`)
+- [ ] 위키 PR #15 머지 및 라이브 반영 확인 (https://wiki.poomasi.org/실천기술/AI와-함께-홈페이지-문구를-고치고-실제-반영까지-확인하기)
+- [ ] 서버 www 동기화가 수동인지 타이머인지 확정 필요 — 지미에게 편지로 질문해 둠 (gh-pages push 후 미반영이면 `ssh root@sakyowon.co.kr` → `sudo bash /opt/sakyowon/src/deploy-www.sh`)
 - [ ] (이월) 위스테이 별내 강의 진행 후 피드백 반영 여부 확인
 - [ ] 참가비 정책 표기 확인 — 8/23 사용자 수정("만든 결과물 공유로 대신")과 8/24 지시(2만원)가 충돌해 2만원으로 통일했음. 이사장님 확정값인지 확인
 
