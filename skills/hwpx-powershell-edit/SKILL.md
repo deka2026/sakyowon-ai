@@ -1,6 +1,6 @@
 ---
 name: hwpx-powershell-edit
-description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정하는 스킬. .hwpx 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 수정 부분 빨간색 표시(교정본), 재패키징이 필요할 때 사용. 대량 교정(수십~수백 건)에는 인덱스 기반 경로를 쓴다. HWP(구형 바이너리)는 불가 — hwpx만 지원.
+description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정·생성하는 스킬. .hwpx 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 수정 부분 빨간색 표시(교정본), 재패키징, 그리고 기존 문서를 템플릿 삼아 요약본 등 새 문서를 표(hp:tbl) 포함으로 조립할 때 사용. 대량 교정(수십~수백 건)에는 인덱스 기반 경로를 쓴다. HWP(구형 바이너리)는 불가 — hwpx만 지원.
 ---
 
 # HWPX 문서 편집 (PowerShell 전용)
@@ -135,3 +135,24 @@ v4 원본 → 덤프 → (교정 목록 작성) → add_red_charpr → REPLIN �
         → 사람이 한글에서 검토·수락·빨간색 제거 → 최종본
 ```
 빨간색은 "AI가 무엇을 건드렸는지"를 사람이 한눈에 확인하기 위한 것이다. 검토를 거치지 않은 자동 수정본을 최종본으로 삼지 말 것.
+
+## 경로 C — 새 문서 조립 (요약본·통합본 생성, 표 포함)
+
+기존 문서를 **서식 템플릿**으로 삼아 완전히 새 본문(문단+표)을 조립한다. 2026-08-25 두 사업계획서(322·236런)를 표 10개짜리 6쪽 통합 요약 hwpx로 생성해 실증.
+
+1. **템플릿 분석**: 원본을 `hwpx_dump.ps1`로 덤프하고 `show_paragraph.ps1`로 제목·절 제목·본문·들여쓰기 문단의 paraPrIDRef/charPrIDRef를 채록. 표가 있으면 표 하나를 잘라 셀 서식(헤더 셀 borderFill/paraPr/charPr, 본문 셀은 별도)과 **표 전체폭**(hp:sz width, 보통 47622 HWPUNIT)을 확인.
+2. **spec 파일 작성** (UTF-8, 한국어 가능): 한 줄 한 요소.
+   ```
+   H1|큰 제목          H1PB|쪽 나눔 후 큰 제목
+   H2|절 제목           P|본문 문단
+   TBL|열폭1,열폭2,...   ← 합이 표 전체폭(47622)과 같아야 함(스크립트가 검증)
+   R|셀1|셀2|...        ← TBL 직후 연속. 첫 R = 머리행(음영)
+   END                  ← 표 종료
+   ```
+   셀 텍스트에 `|` 금지(·로 대체), `< >` 금지, `&`는 `&amp;`.
+3. **생성**: `& scripts\build_fragment.ps1 -SpecPath spec.txt -OutPath fragment.xml` — 문단·표 XML을 한 줄로 출력. 서식 ID가 템플릿과 다르면 스크립트 상단 Cell 함수와 H1/H2/P 분기의 ID를 템플릿 채록값으로 교체.
+4. **조립**: XmlDocument로 원본 section0.xml을 열어 **첫 hp:p(secPr·머리말 포함)만 남기고 전부 제거** → fragment를 `<wrap xmlns:hp="...">`로 감싸 파싱 → ImportNode로 append → 저장 후 linesegarray 전부 제거.
+   - 첫 문단은 중첩 hp:p(머리말 subList)를 포함하므로 정규식으로 자르지 말고 반드시 DOM으로 다룰 것.
+5. **재패키징·검증**: `hwpx_repack_multi.ps1`(header.xml 무수정이어도 함께 교체해 무방) → 새 파일 재덤프로 있어야 할 문자열 확인. 쪽수는 한글이 열 때 재계산되므로 목표 쪽수는 내용량으로 근사하고 육안 확인으로 마무리.
+
+표 관련 요령: `treatAsChar="1"`(인라인)·`repeatHeader="1"`이 기본. 셀 높이(cellSz height)는 최소값이라 내용에 따라 자동 확장된다. 표 id는 테이블마다 유일하게(생성기가 1900000001부터 증가). 행 수를 rowCnt와 일치시키는 것은 생성기가 보장한다.
