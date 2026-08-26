@@ -156,3 +156,30 @@ v4 원본 → 덤프 → (교정 목록 작성) → add_red_charpr → REPLIN �
 5. **재패키징·검증**: `hwpx_repack_multi.ps1`(header.xml 무수정이어도 함께 교체해 무방) → 새 파일 재덤프로 있어야 할 문자열 확인. 쪽수는 한글이 열 때 재계산되므로 목표 쪽수는 내용량으로 근사하고 육안 확인으로 마무리.
 
 표 관련 요령: `treatAsChar="1"`(인라인)·`repeatHeader="1"`이 기본. 셀 높이(cellSz height)는 최소값이라 내용에 따라 자동 확장된다. 표 id는 테이블마다 유일하게(생성기가 1900000001부터 증가). 행 수를 rowCnt와 일치시키는 것은 생성기가 보장한다.
+
+## 경로 D — 파이썬 빌더로 새 문서 생성 (`scripts/hwpx_gen.py`)
+
+경로 C의 파이썬 버전. spec 파일 없이 **코드로 문서를 조립**할 때 쓴다 — 반복 구조(과×팀 20개), 조건 분기, 여러 판본(v2·v3·v4) 재생성이 필요한 문서에 유리. 2026-08-25 시민주권본부 조직설계안(196문단, 박스형 조직도 표 8×5 colSpan 병합 + 총괄표 21×3, 4개 판본 재생성)으로 실증.
+
+```python
+import sys; sys.path.insert(0, r'...\skills\hwpx-powershell-edit\scripts')
+from hwpx_gen import HwpxDoc
+d = HwpxDoc(r'템플릿.hwpx')          # 스타일 ID가 다른 템플릿이면 styles= 로 오버라이드
+d.title('문서 제목')                  # 반드시 첫 호출 — secPr·colPr를 이 문단이 운반
+d.h1('1.', '장 제목')                 # page_break=True 로 쪽 나눔
+d.dept('❶ 절 제목'); d.team('❶-1. 소제목'); d.band('띠 제목')
+d.b1('● 불릿'); d.b2('○'); d.b3('–'); d.b4('▸')   # lead= 로 강조 선행어
+d.table(rows, widths, header_rows=(0,2))   # 셀 = [문단들] 또는 ([문단들], colspan)
+d.save(r'출력.hwpx')                  # XML 검증 → OCF(mimetype 우선·STORED) 재패키징까지 일괄
+```
+
+- 기본 스타일 ID는 사교원 표준 사업계획서 템플릿(재생에너지 전략 문서) 기준. 다른 템플릿은 `show_paragraph.ps1`로 채록해 `DEFAULT_STYLES` 형태의 dict를 전달.
+- **박스형 조직도**는 colSpan 병합 표로 만든다: 전폭 1셀(위원회) → 전폭 1셀(▼ 화살표 행) → 5셀(과) → 5셀(팀 목록, 셀당 여러 문단) → 전폭 1셀(중간지원조직). `header_rows`로 음영 행 지정.
+- 표를 독립된 1쪽에 넣으려면 표 앞뒤 h1에 `page_break=True`.
+
+### 경로 D 함정 (2026-08-25 실전)
+1. **출력 파일이 한글에서 열려 있으면 잠겨서 저장 실패** — 같은 이름 덮어쓰기 대신 v2·v3 등 새 파일명으로 출력하고 사용자에게 알릴 것.
+2. `esc()`는 `&`만 이스케이프한다. 본문에 `< >`는 아예 넣지 말 것(파싱 오류). `R&D`는 그냥 쓰면 `R&amp;D`로 저장돼 정상.
+3. `save()` 안에서 지역변수를 `xml`로 짓지 말 것 — `from xml.dom import minidom` 계열 import가 이름을 가린다(실제로 걸림, 현재 코드는 `content`로 회피).
+4. HWP 구형(.hwp)·확장자 없는 3MB 파일 텍스트 추출 시 **서로게이트 문자로 UTF-8 쓰기 실패** 가능 — `text.encode('utf-8','ignore').decode('utf-8')` 후 저장(hwp-binary-extract 스킬 병용).
+5. 조판 캐시(linesegarray)는 아예 생성하지 않는 방식이라 별도 제거 불필요. 한글이 열 때 재계산.
