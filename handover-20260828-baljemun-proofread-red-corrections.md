@@ -25,7 +25,14 @@
 - 메모리 저장: `feedback-sujeonghae-routine.md`, `feedback-hwpx-table-width.md`
 - 스킬 `hwpx-powershell-edit`에 표 폭 규칙 반영(활성 폴더), 신규 스킬 `sujeonghae-routine` 제작(이번 정리)
 
+### 4. 정리 루틴 결과 (추가)
+- 레슨: `문서/실천기술/AI와-함께-한글문서-빨간펜-교정하기.md` — **PR #22 머지 완료**(haeory-cyber/solidarity-intelligence-wiki, 커밋 55ca14b)
+- 편지함 라이브 반영 요청: sakyowon-site ea5362b (이전 6건 + 이번 1건 = 7건 일괄)
+- 라이브 확인: wiki.poomasi.org 404 — 본부 배포 대기
+- 위키 로컬 main의 중복 커밋(PR #21과 동일 내용)은 `backup-main-20260828` 브랜치 보관 후 origin/main으로 정렬
+
 ## 미완료 / 다음 할 일
+- [ ] 위키 라이브 확인 대기: PR #18~#22 총 7건 (wiki.poomasi.org 반영 후 URL 확인)
 - [ ] 참고3 수치 불일치(52↔48MW, 112↔104MWh, 1,220↔1,120억, 마이크로/나노그리드 1↔3개소) — 사용자(김일영) 확정 필요
 - [ ] 본문 8장 5개 모델 vs 참고3 6개 모델(산단 RE100형) 개수 정합 — 의도 여부 확인
 - [ ] 두 교정본을 사용자가 한글에서 검토·수락 후 빨간색 해제 → 최종본 확정
