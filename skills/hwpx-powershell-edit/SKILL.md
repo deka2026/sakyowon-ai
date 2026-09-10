@@ -223,3 +223,64 @@ d.save(r'출력.hwpx')                  # XML 검증 → OCF(mimetype 우선·ST
 
 - 목표 쪽수 ±1은 협상 가능하다고 보고, 초과분이 **내용 증가 때문인지 조판 낭비 때문인지** 구분해 보고할 것. 낭비면 줄이고, 내용이면 사용자에게 알린다.
 - 최종본은 새 파일명으로 출력하고(경로 D 함정 1) 확인용 PDF를 함께 전달한다.
+
+## 경로 F — 본문 12pt와 생성 후 실검증 (`scripts/patch_body_12pt.py`)
+
+2026-09-09-10 실전에서 확립. **문서를 만들었다고 끝이 아니다** — 실제로 열리는지까지 봐야 완료다.
+
+### F-1. 본문 12pt 만들기
+
+사교원 규칙: **hwpx 본문은 12pt, 표 셀은 10pt 유지.** 사교원 템플릿의 본문 charPr은 대개 10pt(height=1000)라 그대로 쓰면 규칙에 어긋난다. 본문·불릿에 쓰는 charPr만 12pt 사본으로 복제하고 생성기 STYLES에서 새 id를 가리킨다. 표 셀 charPr은 건드리지 않으므로 표는 10pt로 남는다.
+
+```python
+from patch_body_12pt import list_charprs, patch_body_pt
+list_charprs('template.hwpx')                                   # id·height·color 채록
+m = patch_body_pt('template.hwpx', 'tpl_12pt.hwpx', ['8','10','11','12'])
+# m == {'8':'19','10':'20','11':'21','12':'22'}
+# STYLES의 body.charpr / bullet 마커·em_charpr 에 새 id를 넣고 cell.charpr은 그대로 둔다
+```
+
+글꼴·굵기·색은 원본 그대로 유지되고 크기만 바뀐다. 복제할 id는 `show_paragraph.ps1`이나 `list_charprs`로 먼저 채록할 것.
+
+### F-2. 교정본을 최종본으로 확정하기
+
+빨간펜 교정본을 사용자가 수락하면 `clear_red(src, out)`로 **글자모양의 색만** 검정으로 되돌린다. `section0.xml`은 바이트 그대로 보존되므로 본문이 변형될 위험이 없다.
+
+```python
+from patch_body_12pt import clear_red
+clear_red('..._교정_v1.0.hwpx', '..._최종.hwpx')   # 되돌린 charPr id 목록 반환
+```
+
+### F-3. 생성 직후 검수 3단계 — 이 순서를 건너뛰지 말 것
+
+```python
+from docutil import patch_table, fix_tbl_ids, audit
+d = patch_table(HwpxDoc('tpl_12pt.hwpx', styles=STYLES))   # ① 셀 정규화 래퍼 필수
+...
+d.save(out); fix_tbl_ids(out); print(audit(out))           # ② 표 id 유일화 + 지표
+```
+
+| 지표 | 정상 범위 | 벗어나면 |
+|---|---|---|
+| `paras_per_cell` | 1.0~1.5 | 셀에 문자열을 넘긴 버그(글자마다 문단) |
+| `unique_ids` | `tables`와 같아야 | 표 id가 전부 0 |
+| `section_kb` | 템플릿과 같은 자릿수 | 위 두 버그 중 하나 |
+| 표 폭 | 본문폭 이하 | 오른쪽 넘침 |
+
+③ **한글로 실제 열어본다.** `hwpx_pagecount.ps1 -Pdf`로 열고 PDF를 Read 도구로 눈으로 확인. **XML 검증만으로는 열림을 보장하지 못한다** — 셀 버그 문서도 `minidom.parseString`은 통과한다.
+
+### F-4. 한글이 실행 중일 때 — 죽이지 말고 구조 대조로 대체
+
+```powershell
+Get-Process Hwp -ErrorAction SilentlyContinue | Select-Object Id,@{n='T';e={$_.MainWindowTitle}}
+```
+
+`MainWindowTitle`에 사용자 문서명이 보이면 **COM을 쓰지 않는다**(미저장 문서 소실 위험). 대신 **열림이 확인된 문서와 구조를 대조**하고, 검증 방식을 사용자에게 그대로 알린다.
+
+대조 항목: XML 유효 / mimetype 첫 엔트리·STORED / 표 개수·id 유일성 / 표 폭 초과 / `paras_per_cell` / 미해결 charPr·paraPr·style 참조 / `secPr` 존재 / `linesegarray` 잔존
+
+### 경로 F 함정
+
+1. **문서가 안 열린다는 신고를 받으면 XML 검증부터 하지 말 것.** well-formed인데 안 열리는 경우가 실제로 있었다. `audit`의 문단 수·파일 크기를 먼저 본다.
+2. `list_charprs`는 `with`로 닫지만, 직접 `zipfile.ZipFile(...)`을 열어 비교하면 핸들이 남아 임시파일 삭제가 실패한다(WinError 32). 검증 스크립트에서도 `with`를 쓸 것.
+3. **한글이 재저장한 파일은 charPr이 재매핑된다.** 교정본을 사용자가 한글에서 저장했다면 id를 다시 채록해야 한다(이번엔 빨강이 24로 이동해 있었다).
