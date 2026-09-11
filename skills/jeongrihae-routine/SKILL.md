@@ -87,7 +87,14 @@ tags: [실천기술, ...]
 
 ## ④ 위키배포
 
-**완료 정의 = push가 아니라 라이브 반영 확인** (wiki.poomasi.org에서 문서가 열려야 완료).
+**저장처는 사교원 위키가 기본이다** (2026-09-11 사용자 지시). 공동위키에도 올릴지는 그때 정한다.
+
+| 위키 | 레포 | 라이브 | 완료 정의 |
+|---|---|---|---|
+| **사교원 위키**(기본) | `deka2026/sakyowon-wiki` (private, **v4**, `content/<분류>/`) | `sakyowon.co.kr/sakyowon-wiki` | 아래 4단계 사슬을 끝까지 |
+| 연대지능 공동위키 | `haeory-cyber/solidarity-intelligence-wiki` (`문서/실천기술/`) | **웹 발행 없음 — 레포 자체가 위키** | **PR 머지 = 완료** |
+
+**공동위키에 wiki.poomasi.org 확인 단계를 넣지 말 것.** 그 주소는 지미 개인 위키이고 `/실천기술/` 경로가 없다. 공동위키 레포에는 Actions·Pages가 없어 발행 파이프라인 자체가 없다. 2026-08~09에 이 잘못된 완료 정의 때문에 "배포 대기 9건"이 쌓였다(실제로는 머지 즉시 공개돼 있었다).
 
 1. 위키 클론에서 브랜치: `lesson/<주제>-YYYYMMDD`
 2. 커밋 (PR 제목 형식: `[문서] 제목`) → `git push -u origin <브랜치>`
@@ -123,3 +130,41 @@ tags: [실천기술, ...]
 2. PS 5.1: `&&` 없음, 한국어 .ps1 깨짐, `git credential fill`은 PS 파이프 불가(cmd 경유), .NET 파일 API는 절대경로 필수
 3. 편지함·레슨 등 한국어 파일은 `[System.Text.UTF8Encoding]::new($false)`로 쓸 것 (Set-Content 기본 인코딩은 ANSI)
 4. winget으로 설치한 도구는 현 셸 PATH에 없음 — 사전 확인의 PATH 갱신 한 줄 실행
+
+## ④-2 사교원 위키 배포 사슬 (2026-09-11 확인)
+
+`sakyowon.co.kr/sakyowon-wiki`는 **GitHub Pages가 아니라 가비아 자체서버(Caddy)** 가 서빙한다(`Server: Caddy`로 확인). 그래서 push나 CI 성공만으로는 라이브가 바뀌지 않는다. 네 단계를 끝까지 가야 한다.
+
+| 단계 | 내용 | 자동 여부 |
+|---|---|---|
+| 1 | 문서를 `deka2026/sakyowon-wiki` **v4**의 `content/<분류>/`에 커밋·push | 수동 |
+| 2 | `Deploy Quartz to GitHub Pages` 워크플로가 빌드 → `github-pages` 아티팩트 | **자동** |
+| 3 | 아티팩트를 `deka2026/sakyowon-wiki-site` **master**에 통째로 반영 | **수동** |
+| 4 | 서버에서 `server/deploy-www.sh` 실행 → `/opt/sakyowon/www/sakyowon-wiki` | **수동(SSH 필요)** |
+
+3단계는 로컬 빌드 없이 CI 산출물을 그대로 쓰면 된다 — 내용이 CI와 100% 같아 안전하다.
+
+```powershell
+gh run download <runId> --repo deka2026/sakyowon-wiki --dir art     # github-pages 아티팩트
+tar -xf art\github-pages\artifact.tar -C public
+# sakyowon-wiki-site 클론에서 .git 빼고 전부 지우고 public/* 복사 → commit → push
+```
+
+**분류 폴더**: `연대지능` · `연대지능아카데미` · `에너지-전환` · `자산기반-사회연대경제` · `전남광주` · `망남-신활력` · `메타-기록`(핸드오버 아카이브). 실천기술 레슨은 주제에 맞춰 분산한다.
+
+**frontmatter는 Quartz 관행**(공동위키의 지미 규칙과 다름):
+
+```markdown
+---
+title: 제목
+date: YYYY-MM-DD
+author: 김일영          # 원 기여자. 유지한다
+tags:
+  - 분류폴더명
+  - 기타태그
+---
+```
+
+### 완료 보고 원칙
+
+라이브 확인 전에는 "배포 완료"라고 쓰지 말 것. 4단계가 남았으면 **"3단계까지 완료, 서버 반영 대기"** 로 정확히 적는다. 확인은 헤더까지 본다 — `curl -I`의 `Last-Modified`가 갱신됐는지, `sitemap.xml`의 URL 수가 늘었는지.
