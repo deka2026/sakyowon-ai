@@ -34,8 +34,16 @@
 ### 6. 레슨 (③ 단계)
 - 사교원 위키 `content/연대지능/AI와-함께-발제문-한-편으로-한글문서-발표자료-영문판-세트-만들기.md`
 
-### 7. 위키배포 (④ 단계)
-- (아래 "위키배포 결과"에 추가 커밋으로 기록)
+### 7. 위키배포 (④ 단계) — 사교원 위키 4단계 사슬
+| 단계 | 결과 |
+|---|---|
+| 1. v4 커밋·push | `content/연대지능/AI와-함께-발제문-한-편으로-한글문서-발표자료-영문판-세트-만들기.md` — 5c3a33d |
+| 2. CI 빌드 | Deploy Quartz run 35070621838 success. 단, github-pages 아티팩트는 API에 0건으로 노출돼 `gh run download` 불가 → 로컬 빌드로 대체 |
+| 3. site master 반영 | 다른 세션이 같은 클론에서 작업 중(untracked 파일)이어서 pull 불가 → **detached 워크트리**(origin/v4 9dd9f41)에서 `npx quartz build -d … -o …`로 빌드해 `sakyowon-wiki-site` master 17e5799 push. sitemap 103건(다른 세션 문서 2건 포함) |
+| 4. 서버 deploy-www.sh | **대기** — 편지 2d54352로 지미에게 요청(앞선 9/16 일괄 요청과 병합 처리). 9/16 확인: 라이브 sitemap 79건·Last-Modified 9/6, 문서 URL 404 |
+
+- 공동위키에는 올리지 않음(사교원 내부 절차 중심 주제). 필요 시 `문서/실천기술/`로 복제.
+- 함정 기록: ① 같은 위키 클론을 두 세션이 쓰면 `git pull`이 untracked 충돌로 막힌다 — 다른 세션 파일을 지우지 말고 `git worktree add --detach <경로> origin/v4`로 빌드용 트리를 따로 뜬다(node_modules는 메인 클론 것을 `npx quartz build -d/-o`로 재사용). ② Pages 아티팩트는 배포 직후 API에서 사라질 수 있어 3단계는 로컬 빌드가 안전하다.
 
 ## 미완료 / 다음 할 일
 - [ ] 발표 당일(10.1) 전 최종 확인: 영문 슬라이드 4번 장의 커뮤니티 주식 표현("withdrawable capital")을 한글판과 맞출지 사용자 결정
