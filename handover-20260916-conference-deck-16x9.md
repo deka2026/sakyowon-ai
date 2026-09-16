@@ -29,7 +29,7 @@
 - [ ] (이월) 표 셀 글자 크기 규칙 확정(셀 12pt ↔ 10pt) — 사용자 확인
 - [ ] (이월) 공론장 발제문 참고3 수치 불일치(52↔48MW 등) 저자 확정
 - [ ] (이월) 사회연대경제기본법 공포문 확인 후 제17·18조 갱신, 시행령 의견서 초안
-- [ ] 사교원 위키 4단계(서버 deploy-www.sh) 반영 — 아래 위키배포 결과 참조
+- [ ] 사교원 위키 4단계(서버 `bash /opt/sakyowon/src/deploy-www.sh`) 실행 — 이사장 SSH 또는 지미. 완료 후 `curl -I .../sakyowon-wiki/sitemap.xml`의 Last-Modified 갱신과 URL 수 98건 확인
 
 ## 파일 위치
 | 경로 | 내용 |
@@ -39,8 +39,16 @@
 | `공론장 문서\…_컨퍼런스발제문_20260914.hwpx` (+PDF) | 발제문 10쪽 |
 | `sakyowon-ai\skills\pptx-lecture-deck\` | 빌더 라이브러리·렌더 스크립트(16:9 수정 반영) |
 
-## 위키배포 결과
-- (아래 단계 진행 후 추가 커밋으로 기록)
+## 위키배포 결과 (사교원 위키 4단계 사슬)
+| 단계 | 결과 |
+|---|---|
+| 1. v4 커밋·push | `content/전남광주/AI로-만든-PPT의-16대9-규격-함정과-정정법.md` — d55409f |
+| 2. CI 빌드 | Deploy Quartz run 35049726452 success. 직후 다른 세션 커밋 9da1871의 run 35049748719도 success |
+| 3. site master 반영 | 다른 세션(해바람물 정리)이 9da1871 로컬 빌드로 push한 2811ef7에 이 문서 HTML·og-image 포함 확인 |
+| 4. 서버 deploy-www.sh | **대기** — SSH 비밀번호는 이사장 보관. 9/16 확인: 라이브 sitemap 79건(Last-Modified 9/6) vs 레포 98건. 편지 c3f228e(다른 세션)로 지미에게 일괄 요청됨 |
+
+- 스킬: `pptx-lecture-deck` SKILL.md 함정 8 + deck_lib.new_deck() 수정 (a8f6b44). 공동위키에는 올리지 않음(주제가 사교원 내부 도구 함정)
+- 비고: a8f6b44 커밋에 다른 세션이 작성해 둔 `handover-20260916-mangnam-budget-execution-hancell.md`가 `git add -A`로 함께 들어갔음(완성된 문서라 문제 없음)
 
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
