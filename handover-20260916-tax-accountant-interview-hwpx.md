@@ -40,6 +40,13 @@
 - [ ] (이월) 사회연대경제기본법 공포문 확인 후 제17·18조 갱신, 시행령 의견서 초안
 - 해결됨: "표 셀 글자 크기 규칙 확정" 이월 항목 — 메모리 `feedback-hwpx-body-12pt`에 셀 12pt로 확정돼 있음(2026-09-10). 이번 문서도 셀 12pt로 제작
 
+## 위키배포 결과 (2026-09-16)
+- ③ 레슨: `sakyowon-wiki` v4 `content/연대지능/AI에게-스크립트-경로만-주고-한글문서-만들기.md` — PR #1 squash 머지 **b77e465**
+- 사교원 위키 사슬: 1단계 완료(b77e465) → 2단계 CI는 사용하지 않음(산출물 삭제 관행) → **3단계 완료**: v4 501204f(다른 세션의 숏폼 레슨 포함)를 `git archive`로 뽑아 클린 트리에서 `npx quartz build -d … -o …`(100문서·350파일) → `sakyowon-wiki-site` master **02b921f**, sitemap 101건 → **4단계 서버 반영 대기**(SSH 필요). 편지함 `haeory-sakyowon-site/JIMMY-DECA.md`에 반영 요청 추가
+- 스모크 테스트: `hwpx_house_rules.py baseline.hwpx` → raised 7 charPr, tables_inflow 13, cell_paras_left 297, paraPr 29 신설 — 수작업 결과와 일치
+- 병행 세션 주의: 같은 시각 다른 세션들이 sakyowon-ai(hwpx-powershell-edit SKILL.md 함정 10·examples/·hwpx_redit.py, 핸드오버 3건)와 sakyowon-wiki(레슨 2건)를 커밋했다. 이 세션은 자기 파일만 add했고 `git archive v4`로 빌드해 미커밋 파일이 사이트에 섞이지 않게 했다
+- 공동위키(solidarity-intelligence-wiki)에는 올리지 않음 — 저장처 기본은 사교원 위키(2026-09-11 지시)
+
 ## 파일 위치
 | 경로 | 내용 |
 |---|---|
