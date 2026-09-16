@@ -131,6 +131,8 @@ INS_BEFORE <인덱스>
 8. **한글 재저장본은 서식 ID가 통째로 재매핑된다** (2026-09-09 실증): AI가 만든 hwpx를 사용자가 한글에서 편집·저장하면 paraPr/charPr ID가 바뀐다(시민기금 문서: 불릿 21→28, h1 25→23, 소제목 23/11→31/11, 셀 28/10→26/18·10, 새 charPr 추가·itemCnt 증가). 이전 세션의 채록값을 절대 재사용하지 말고 **편집할 때마다 show_paragraph.ps1로 재채록**할 것. 글자 크기(height)도 함께 확인.
 9. **기존 문서 끝에 새 장(章) 삽입 — fragment 삽입법**: 전체 재조립 대신 문단+표 XML fragment를 만들어 section0.xml의 `</hs:sec>` 직전에 문자열 삽입 → minidom 검증 → zipfile 재패키징(mimetype 우선 STORED). 기존 문단과 조판 캐시는 건드리지 않으므로 안전하다(문서 끝 추가는 앞쪽 레이아웃에 영향 없음). 표 골격은 hwpx_gen.table과 동일하되 채록한 셀 paraPr/charPr/borderFill로 교체하고 표 id는 유일화. 2026-09-09 시민기금 12장(표 5개 6쪽 분량), 2026-09-10 펀드 문서 전면 재조립(다른 문서를 서식 템플릿으로 — 스타일 dict만 재채록해 경로 D 함수 재사용)으로 실증.
 
+10. **같은 낱말을 문서 전체에서 바꿀 때는 REPLIN을 쓰지 말 것**: `apply_by_index.ps1`의 REPLIN은 조각이 한 인덱스 안에서 **정확히 1회**여야 하고, 여러 `<hp:t>` 런에 걸쳐 잘린 낱말(표 셀의 `❹ 공동체기업` + `육성팀`)은 아예 찾지 못한다. 조직개편 팀명 치환처럼 같은 낱말이 수십 번 나오는 작업은 스킬 `orgchart-doc-migration`의 `hwpx_retag.py`를 쓴다 — 모든 런을 이어붙인 문자열에서 찾고 런 경계를 넘는 것도 처리하며, 빨간 표시와 잔존 옛말 0건 검증까지 한다. 2026-09-11 참고문서 2종 22건 치환으로 실증.
+
 ## 교정본 워크플로 요약
 
 ```
@@ -230,7 +232,7 @@ d.save(r'출력.hwpx')                  # XML 검증 → OCF(mimetype 우선·ST
 
 ### F-1. 본문 12pt 만들기
 
-사교원 규칙: **hwpx 본문은 12pt, 표 셀은 10pt 유지.** 사교원 템플릿의 본문 charPr은 대개 10pt(height=1000)라 그대로 쓰면 규칙에 어긋난다. 본문·불릿에 쓰는 charPr만 12pt 사본으로 복제하고 생성기 STYLES에서 새 id를 가리킨다. 표 셀 charPr은 건드리지 않으므로 표는 10pt로 남는다.
+사교원 규칙: **hwpx 본문도 표 셀도 12pt.** (2026-09-10 사용자 확정 — 그 전의 "표 셀 10pt 유지"는 폐기.) 사교원 템플릿의 본문 charPr은 대개 10pt(height=1000)라 그대로 쓰면 규칙에 어긋난다. 본문·불릿·셀에 쓰는 charPr을 12pt 사본으로 복제하고 생성기 STYLES에서 새 id를 가리킨다. 셀을 키우면 좁은 열이 접히므로 열 폭 재배분을 함께 한다. 이미 완성된 문서(외부 빌더 산출물)라면 경로 G의 `hwpx_house_rules.py`가 한 번에 처리한다.
 
 ```python
 from patch_body_12pt import list_charprs, patch_body_pt
@@ -294,3 +296,33 @@ Get-Process Hwp -ErrorAction SilentlyContinue | Select-Object Id,@{n='T';e={$_.M
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\pagecount_auto.ps1 -HwpxPath "out.hwpx" -Pdf
 ```
 `-ExecutionPolicy Bypass` 필수(기본 정책이 .ps1 실행 차단). 실행 전 `tasklist | findstr Hwp`로 사용자 한글이 떠 있지 않은지 확인. 검수는 PDF를 PyMuPDF로 쪽별 PNG + 접촉 시트(6열·40dpi)로 만들어 빈 쪽·넘침을 한눈에 본다.
+
+## 경로 G — 외부 빌더 산출물에 사내 규칙 적용 (`scripts/hwpx_house_rules.py`)
+
+2026-09-16 실전. 다른 세션·다른 사람이 **python-hwpx**(`from hwpx.document import HwpxDocument`, `pip install python-hwpx`) 같은 외부 빌더로 만든 hwpx는 XML은 유효하지만 사내 규칙(본문·셀 12pt, 표 자리차지, 셀 왼쪽 정렬)에 어긋난다. 스크립트를 고치지 말고 **산출물에 규칙을 덧입힌다** — 어떤 빌더의 결과물에도 같은 도구가 통한다.
+
+```bash
+python scripts/hwpx_house_rules.py in.hwpx out_rules.hwpx            # --min-pt 12 기본
+# {'raised_charpr': {'11': (1050, 1200), ...}, 'tables_inflow': 13, 'cell_paras_left': 297, 'parapr_added': {'0': '29'}}
+```
+
+| 처리 | 방법 | 비고 |
+|---|---|---|
+| 12pt | section에서 **실제 참조되는** charPr 중 height<1200만 1200으로 | 미참조 기본값(각주 9pt 등)·이미 큰 제목은 그대로 |
+| 표 자리차지 | `<hp:pos … treatAsChar="1">` → `"0"` | 표 쪽 분할 규칙 그대로 |
+| 셀 왼쪽 정렬 | `<hp:tc>` 안 문단이 쓰는 JUSTIFY paraPr을 LEFT 사본으로 복제(itemCnt 갱신)해 셀 문단만 재지정 | 본문 양쪽 정렬은 유지. 좁은 열에서 "협 동 조 합" 식 글자 벌어짐 제거 |
+
+절차: ① 원 스크립트를 **그대로** 한 번 돌려 원판을 남긴다(비교 기준) → ② 후처리 → ③ 12pt에서 접히는 좁은 열("번호" 0.9 → 1.15)은 스크립트의 열 폭 비율만 고쳐 재빌드 → ④ `pagecount_auto.ps1 -Pdf` + 접촉 시트로 F-3 ③ 검수. 세무사 인터뷰 질문지(표 13개·44문항)로 실증: 10.5pt 원판 → 12pt 10쪽, 표 전부 정상 분할.
+
+**파일이 로컬에 없을 때** — 사용자가 `wiki/assets/….build.py`처럼 경로만 준 경우, AI 세션이 만든 `claude/…` 브랜치는 main에 없는 것이 기본이다. 두 org 전 레포·전 브랜치를 훑는다:
+```bash
+for r in $(gh repo list <org> --limit 50 --json nameWithOwner --jq '.[].nameWithOwner'); do
+  for b in $(gh api "repos/$r/branches?per_page=50" --jq '.[].name'); do
+    gh api "repos/$r/git/trees/$b?recursive=1" --jq '.tree[].path' | grep -i "<이름>" && echo "== $r @ $b"; done; done
+gh api -H "Accept: application/vnd.github.raw" "repos/<o>/<r>/contents/<path>?ref=<branch>" > 파일   # 클론 없이 받기
+```
+
+### 경로 G 함정
+1. python-hwpx `ensure_run_style`은 속성이 같은 스타일을 **같은 id로 합친다**(C_CELL과 C_BODY가 모두 12pt면 하나). 후처리 보고의 id 개수가 스타일 변수 수보다 적어도 정상.
+2. python-hwpx 산출물의 빈 셀 문단은 `charPrIDRef="0"`(기본 10pt)을 참조하므로 0번도 함께 올라간다. 쪽번호 각주(`- 1 -`)도 0번이라 12pt가 된다 — 문제 되면 `--no-font` 후 `patch_body_12pt`로 선택 적용.
+3. 셀 LEFT 사본은 문서 전체 paraPr 뒤에 붙는다. 한글이 재저장하면 id가 재매핑되므로(함정 8) 다음 편집 전 재채록.
