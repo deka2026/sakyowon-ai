@@ -41,7 +41,14 @@
 - **학생 12편(30초)** + **강사 2편(60초, 규영샘·민경샘)** = 14편, `D:\VideoWorks\output\`. 1080×1920/30fps/**무음**.
 - v1 10편 백업: `output\_v1_백업_20260908\`. 검수용 첫화면 모음 `_검수_타이틀카드_학생12명.jpg`, `_검수_강사_타이틀카드.jpg`.
 
+## 위키배포 결과 (정리해 루틴 ④)
+- 레슨: `sakyowon-wiki` v4 `content/망남-신활력/AI와-함께-캠프-참가자별-숏폼-영상-14편-만들기.md` — 커밋 `501204f`
+- CI `Deploy Quartz to GitHub Pages` run 35070484890 성공 → 아티팩트를 `sakyowon-wiki-site` master에 반영(3단계 완료)
+- 4단계(서버 `deploy-www.sh`, SSH) 미실행 → **라이브 반영 대기**. 확인 URL: `https://sakyowon.co.kr/sakyowon-wiki/망남-신활력/AI와-함께-캠프-참가자별-숏폼-영상-14편-만들기`
+- 스킬 `hyperframes-student-shorts` 커밋 `be28c43` (sakyowon-ai master), `~/.claude/skills/`에 활성화·스모크 통과
+
 ## 미완료 / 다음 할 일
+- [ ] 사교원 위키 4단계(서버 반영) 후 라이브 확인
 - [ ] 저자 최종 검수(12명 첫화면 모음 전달 완료, 피드백 대기)
 - [ ] BGM 없음 — 인스타 업로드 시 앱에서 음원 삽입 권장. 영상 내 삽입 원하면 `npx hyperframes auth login`(HeyGen) 후 `/media-use`로 bgm 해결
 - [ ] 김소은 v01(9/5 첫 스탠스 영상)은 848×464 저해상 — 거슬리면 제거해도 아크 유지
