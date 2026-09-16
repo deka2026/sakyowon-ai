@@ -57,6 +57,20 @@
 - [ ] (이월) 사회연대경제기본법 공포문 확인 후 제17·18조 확정본 갱신, 시행령 의견서 초안
 - [ ] (이월) 고흥 영농형 실무 과제 3건(분양형 REC 가중치·연합회 ESS·정책융자 전대)
 
+## 정리해 루틴 결과 (2026-09-16)
+
+| 단계 | 결과 |
+|---|---|
+| ① 핸드오버 | 이 문서 — 7fe20d7 |
+| ② 스킬 | `hwpx-powershell-edit` SKILL.md 표 쪽 분할 절 + `hwpx_gen.py` treatAsChar=0 + `gen_lib_baljemun.py` · `pagecount_auto.ps1` 신설 — 7fe20d7. 스모크: import OK, .ps1 비ASCII 0자 |
+| ③ 레슨 | 「AI와 함께 행정 직제안을 비교표로 검토하고 수정안 한글문서 만들기」 — 사교원 위키 `content/전남광주/` (v4 5626609) + 공동위키 `문서/실천기술/` |
+| ④ 위키배포 — 사교원 위키 | 1단계 v4 push 5626609 ✔ / 2단계 CI Deploy Quartz(아래 확인값) / 3단계 site master **5e1a49a** ✔ (origin/v4 클린 워크트리 Quartz 로컬 빌드 355파일, 미커밋 문서 제외) / **4단계 서버 반영 대기** — SSH 불가, 편지로 지미에게 요청(라이브 sitemap 79건·Last-Modified 9/6 = 미반영) |
+| ④ 위키배포 — 공동위키 | PR **#31** 생성(lesson/admin-org-plan-comparison-20260916). **머지는 권한 분류기가 차단(Merge Without Review)** — 사용자가 직접 머지하거나 승인 필요 |
+
+### 미완료로 이월
+- [ ] 공동위키 PR #31 머지 (사용자 승인 또는 직접 `gh pr merge 31 --squash`)
+- [ ] 사교원 위키 4단계: 서버 `deploy-www.sh` 실행 후 라이브 확인 (`curl -I …/sitemap.xml`의 Last-Modified 갱신, URL 수 100+)
+
 ## 파일 위치
 
 | 경로 | 내용 |
