@@ -284,3 +284,13 @@ Get-Process Hwp -ErrorAction SilentlyContinue | Select-Object Id,@{n='T';e={$_.M
 1. **문서가 안 열린다는 신고를 받으면 XML 검증부터 하지 말 것.** well-formed인데 안 열리는 경우가 실제로 있었다. `audit`의 문단 수·파일 크기를 먼저 본다.
 2. `list_charprs`는 `with`로 닫지만, 직접 `zipfile.ZipFile(...)`을 열어 비교하면 핸들이 남아 임시파일 삭제가 실패한다(WinError 32). 검증 스크립트에서도 `with`를 쓸 것.
 3. **한글이 재저장한 파일은 charPr이 재매핑된다.** 교정본을 사용자가 한글에서 저장했다면 id를 다시 채록해야 한다(이번엔 빨강이 24로 이동해 있었다).
+
+## 표 쪽 분할 규칙 (2026-09-12 실증) — 반드시 `treatAsChar="0"`
+
+한글은 **글자처럼 취급(`<hp:pos treatAsChar="1">`) 표를 쪽 경계에서 나누지 않는다** (`pageBreak="CELL"`이어도). 한 쪽보다 큰 표는 통째로 다음 쪽으로 밀려 앞 쪽이 비고, 넘치는 행은 바닥 여백 밖으로 그려지다 잘린다. 실험 7종 중 **자리차지(`treatAsChar="0"`, textWrap TOP_AND_BOTTOM, vertRelTo PARA)** 만 정상 분할됐다. `hwpx_gen.py`·`gen_lib_baljemun.py`(발제문 템플릿용 Doc 서브클래스, 본문폭 46490)는 이미 0으로 고쳐 두었고, `build_fragment.ps1`은 아직 1이므로 쓸 때 바꿀 것. 기존 문서 교정은 section0.xml에서 `treatAsChar="1" affectLSpacing="0" flowWithText="1"` → `treatAsChar="0" …` 치환만으로 충분.
+
+**쪽수 측정·PDF**: `hwpx_pagecount.ps1`은 한글 보안 확인창("접근 허용/모두 허용", WPF MessageBoxImpl)에 걸려 멈춘다. `scripts\pagecount_auto.ps1`이 UI Automation으로 창을 찾아 Alt+N을 보내며 실행한다:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\pagecount_auto.ps1 -HwpxPath "out.hwpx" -Pdf
+```
+`-ExecutionPolicy Bypass` 필수(기본 정책이 .ps1 실행 차단). 실행 전 `tasklist | findstr Hwp`로 사용자 한글이 떠 있지 않은지 확인. 검수는 PDF를 PyMuPDF로 쪽별 PNG + 접촉 시트(6열·40dpi)로 만들어 빈 쪽·넘침을 한눈에 본다.
