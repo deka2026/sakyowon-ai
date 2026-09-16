@@ -1,6 +1,6 @@
 ---
 name: pptx-lecture-deck
-description: 자료(PPT/HWP/PDF/웹)를 바탕으로 한국어 강의안 PPTX를 python-pptx로 생성하고, PowerPoint COM으로 PNG 렌더해 텍스트 넘침을 눈으로 검증·교정하는 스킬. "이 자료로 강의안 만들어줘", "질문마다 1쪽씩 PPT로" 같은 요청에 사용. 카드형 레이아웃 자동 높이 계산과 폰트 자동 축소가 핵심.
+description: 자료(PPT/HWP/PDF/웹)를 바탕으로 한국어 강의안 PPTX를 python-pptx로 생성하고, PowerPoint COM으로 PNG 렌더해 텍스트 넘침을 눈으로 검증·교정하는 스킬. "이 자료로 강의안 만들어줘", "질문마다 1쪽씩 PPT로" 같은 요청에 사용. 카드형 레이아웃 자동 높이 계산과 폰트 자동 축소가 핵심. 컨퍼런스 발표자료(본문 15pt 이상, 한·영 두 판, PDF 제출본, 영문 발제문 Word)는 8절 deck15_lib·docx_paper_lib 모드로.
 ---
 
 # 강의안 PPTX 만들기 (생성 → 렌더 검증 → 교정)
@@ -107,9 +107,38 @@ powershell -File scripts\export_png.ps1 -Deck "D:\...\강의안.pptx" -OutDir ".
 - 강의안은 **원본 자료와 같은 폴더**에 저장한다 (사용자가 원본 옆에서 찾는다).
 - 완성 후 SendUserFile로 전달하고, "원본에서 가져온 것 / 웹에서 보강한 것 / 판단해서 처리한 것"을 구분해 보고한다.
 
+## 8. 컨퍼런스 발표자료 모드 — 본문 15pt 이상, 한·영 두 판 (`scripts/deck15_lib.py`)
+
+2026-09-12~14 전남광주 인수위 논의 발표자료(KEA-REN21 국제컨퍼런스, 19장 한글 + 19장 영문)로 확립. 강의안(Q카드, 11→8.5pt 자동 축소)과 달리 **발표장에서 읽히는 크기**가 요구되면 이 모드를 쓴다.
+
+```python
+import deck15_lib as D
+D.configure(lang="ko")      # "en"이면 Calibri + 영문 폭 추정(0.55 em/글자)
+prs = D.new_deck()
+D.slide_title(...); D.slide_agenda(...)
+D.slide_cards(prs, 1, 제목, 리드, [[(카드제목, [불릿...])], [...]], footer_note=출처)
+D.slide_table(...)  # 3열 비교표, 행 높이 자동
+D.slide_flow(...)   # 4상자 흐름도 + 순환 띠 + 공식 띠
+D.slide_closing(...)
+```
+
+- 폰트 후보 (17, 16, 15) 중 열별 필요 높이가 들어가는 첫 값을 쓰고, **15 미만으로 내려가지 않는다.** 안 들어가면 콘솔에 `OVERFLOW`가 찍히고 카드 높이를 비율로 눌러 넣는다 → 그 장은 **문장을 줄여라**(폰트를 줄이지 말고).
+- 카드 제목이 두 줄로 접히면 불릿 시작 위치를 제목 줄 수만큼 내린다(`est_lines`로 측정). 강의안 모드의 `min(13, size+2.5)` 고정 제목과 다른 점.
+- 각주(출처)는 `footer_note`로 넣되 15pt로 찍힌다. 제출용에서 사용자가 각주를 지운 전례가 있으니 필요할 때만.
+- **밀도 기준**: 15pt 2열이면 열당 카드 2개, 카드당 불릿 2~3개, 불릿 55자(한글)/95자(영문) 이내. 8행 비교표는 4행씩 두 장으로 나눈다.
+- **한·영 세트**: 같은 내용을 영문으로 만들면 문장이 한글보다 약 25% 길어져 카드가 넘친다. 영문판은 처음부터 압축 번역으로 쓰고(`examples/build_deck15_en.py`), 추정기가 conservative하므로 `OVERFLOW`가 찍혀도 렌더 PNG를 눈으로 확인한 뒤 줄일 것. 영문 표기는 사용자 확정 프로필(Il-young Kim · Chairperson · Social Innovation Platform)을 따른다.
+- **PDF 제출본**: `scripts/export_pdf.ps1 -Src x.pptx -Out x.pdf` (PowerPoint COM, ppSaveAsPDF=32). 같은 스크립트가 `.docx`도 받는다(Word COM, wdFormatPDF=17, 쪽수 출력).
+- **발제문(논문형) 영문판**은 hwpx가 아니라 Word로 만든다 — 외국 청중은 한글 파일을 못 연다. `scripts/docx_paper_lib.py`의 `Paper` 클래스(A4·Calibri 11·머리행 음영 표·"- N -" 쪽번호·여러 문단 셀에 "- " 자동 부여)로 조립하고 `export_pdf.ps1`로 PDF까지. 예: `examples/build_paper_en.py`(11쪽).
+- **사용자가 한글판을 직접 고쳐 제출한 뒤 영문판을 요청**하면, 내 빌더가 아니라 **제출본 PDF의 텍스트**(pymupdf `get_text`)를 원문으로 삼아 차이(연도·문구·삭제 항목)를 먼저 대조한다. 2026-09-14에 실증 시작 연도(2026→2027)와 마무리 문장이 제출본에서만 바뀌어 있었다.
+- 한글에서 열려 잠긴 hwpx를 읽어야 하면 `[IO.File]::Open(경로,'Open','Read','ReadWrite')`로 공유 읽기 복사본을 뜬 뒤 덤프한다(한글을 닫게 하지 말 것).
+
 ## 파일
 
 | 파일 | 용도 |
 |---|---|
 | `scripts/deck_lib.py` | 색상·para/rect/textbox 헬퍼, est_lines/card_height/fit_font, 카드형 슬라이드 렌더러 |
+| `scripts/deck15_lib.py` | 컨퍼런스 모드: 본문 15pt 이상, 한·영 설정, 제목·목차·카드·비교표·흐름도·마무리 슬라이드 |
+| `scripts/docx_paper_lib.py` | python-docx 발제문 빌더(`Paper`): A4·표·쪽번호·박스 |
 | `scripts/export_png.ps1` | PowerPoint COM으로 전 슬라이드를 PNG로 내보내기 (한국어 리터럴 없음) |
+| `scripts/export_pdf.ps1` | PPTX(PowerPoint COM)·DOCX(Word COM) → PDF |
+| `examples/build_deck15.py` · `build_deck15_en.py` · `build_paper_en.py` | 2026-09 전남광주 컨퍼런스 한·영 발표자료·영문 발제문 실제 빌더 |
