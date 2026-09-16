@@ -45,8 +45,12 @@ COL_GAP = 0.26
 
 def new_deck():
     prs = Presentation()
-    prs.slide_width = Inches(SW)
-    prs.slide_height = Inches(SH)
+    # 표준 와이드스크린 16:9 = 12192000 x 6858000 EMU. Inches(13.333)은 12191695로 305 EMU 짧고,
+    # python-pptx 기본 템플릿의 sldSz type="screen4x3"이 남아 일부 뷰어가 4:3/사용자 지정으로 인식한다.
+    prs.slide_width = 12192000
+    prs.slide_height = 6858000
+    from pptx.oxml.ns import qn
+    prs.part._element.find(qn('p:sldSz')).set('type', 'screen16x9')
     return prs
 
 
