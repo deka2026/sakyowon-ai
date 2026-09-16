@@ -167,4 +167,15 @@ tags:
 
 ### 완료 보고 원칙
 
-라이브 확인 전에는 "배포 완료"라고 쓰지 말 것. 4단계가 남았으면 **"3단계까지 완료, 서버 반영 대기"** 로 정확히 적는다. 확인은 헤더까지 본다 — `curl -I`의 `Last-Modified`가 갱신됐는지, `sitemap.xml`의 URL 수가 늘었는지.
+라이브 확인 전에는 "배포 완료"라고 쓰지 말 것. 4단계가 남았으면 **"3단계까지 완료, 서버 반영 대기"** 로 정확히 적는다.
+
+확인은 **반드시 셸로** 한다. WebFetch로 "몇 개냐"를 물으면 모델이 어림해 답한다 — 2026-09-10에 79개를 72개로 답해, 나중에 수치가 바뀐 것처럼 보이는 혼선이 있었다.
+
+```bash
+curl -sS -I "https://sakyowon.co.kr/sakyowon-wiki/sitemap.xml" | grep -iE "^(HTTP|Last-Modified|Server)"
+curl -sS "https://sakyowon.co.kr/sakyowon-wiki/sitemap.xml" | grep -c "<loc>"          # 정확한 페이지 수
+curl -sS -o /dev/null -w "%{http_code}
+" "<문서 URL, 한글은 percent-encode>"          # 개별 문서
+```
+
+세 가지를 함께 본다 — `Last-Modified`(서버 파일 갱신 시각), `<loc>` 개수(빌드 반영 여부), 개별 문서 상태코드. 페이지가 열리는지만 보면 캐시에 속고, 개수만 보면 어림값에 속는다.
