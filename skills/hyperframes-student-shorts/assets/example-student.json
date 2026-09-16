@@ -1,0 +1,31 @@
+{
+  "slug": "kim-boyoung",
+  "name": "김보영",
+  "suffix": "학생",
+  "camp": "망남한뼘해변 스킴캠프",
+  "date": "2026.09.05-06",
+  "subtitle": "머뭇거림을 파도 위 웃음으로 바꾼 이틀",
+  "endBadge": "수료를 축하합니다",
+  "endTitle": "해냈다!",
+  "hero":  { "src": "assets/media/kim-boyoung/hero.jpg", "focus": "42% 30%" },
+  "cert":  { "src": "assets/media/kim-boyoung/cert.jpg", "focus": "57% 35%" },
+  "shots": [
+    { "src": "assets/media/kim-boyoung/s01.jpg", "type": "img", "focus": "33% 45%", "note": "photo_09-02-27 | 초반 | 9/5 실내 밸런스보드, 강사 두 손 꼭 잡고 허리 숙여 겨우 버팀" },
+    { "src": "assets/media/kim-boyoung/s02.jpg", "type": "img", "focus": "47% 40%", "note": "photo_09-00-39 | 초반 | 해변에서 발밑 보드를 내려다보며 머뭇거림" },
+    { "src": "assets/media/kim-boyoung/s03.jpg", "type": "img", "focus": "30% 45%", "note": "photo_09-00-33 | 초반 | 강사(파랑 웻수트)와 나란히 보드 잡는 법 배우기" },
+    { "src": "assets/media/kim-boyoung/s04.jpg", "type": "img", "focus": "37% 45%", "note": "photo_09-02-59 | 중반 | 모래 위 보드에 올라 강사 스탠스 따라 무릎 굽히기" },
+    { "src": "assets/media/kim-boyoung/s05.jpg", "type": "img", "focus": "58% 40%", "note": "photo_09-10-04 | 중반 | 9/6 오전 실내 스케이트보드, 강사 손 잡고 균형 연습(래시가드+갈색 바지)" },
+    { "src": "assets/media/kim-boyoung/s06.jpg", "type": "img", "focus": "55% 40%", "note": "photo_09-01-46 | 중반 | 9/6 점심 도시락, 오후 실전 앞두고 재충전" },
+    { "src": "assets/media/kim-boyoung/v01.mp4", "type": "vid", "focus": "50% 45%", "mediaStart": 0.5, "note": "20260906_124139 t=12.8~ (12.3부터 5초 트림) | 후반 | 물가에서 첫 시도: 보드 던지고 올라타 미끄러짐" },
+    { "src": "assets/media/kim-boyoung/v02.mp4", "type": "vid", "focus": "50% 45%", "mediaStart": 0.5, "note": "20260906_125901 t=12.5~ (12.0부터 트림) | 후반 | 달려가 올라탔다가 물보라 일으키며 넘어짐" },
+    { "src": "assets/media/kim-boyoung/v03.mp4", "type": "vid", "focus": "50% 45%", "mediaStart": 0.5, "note": "20260906_125822 t=19.0~ (18.5부터 트림) | 후반 | 성공! 보드 던져 올라타 물 위 활주 뒤 활짝 웃으며 걸어옴" },
+    { "src": "assets/media/kim-boyoung/v04.mp4", "type": "vid", "focus": "50% 45%", "mediaStart": 0.5, "note": "20260906_124918 t=7.8~ (7.3부터 트림) | 후반 | 바다에 보드 띄우고 카메라에 브이·록 사인, 환한 웃음" }
+  ],
+  "messages": [
+    "처음엔 손 놓기가 무서웠어요",
+    "괜찮아, 천천히 한 발씩!",
+    "어? 균형이 잡히는데?",
+    "물 위를 쫙! 진짜 탔다!",
+    "끝까지 해낸 보영이 최고!"
+  ]
+}
