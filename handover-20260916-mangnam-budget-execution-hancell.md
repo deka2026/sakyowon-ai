@@ -50,6 +50,17 @@
 | `sakyowon-ai/skills/hancell-budget-report/` | 스킬(리더·분류·빌드·한셀 재계산 스크립트) |
 | `sakyowon-wiki/content/망남-신활력/AI와-함께-한셀로-보조사업-예산-집행현황-만들기.md` | 레슨 |
 
+## 정리 결과 (2026-09-16 17:10 KST)
+| 단계 | 결과 |
+|---|---|
+| ① 핸드오버 | 이 파일, 커밋 d97fe6f (sakyowon-ai master) |
+| ② 스킬 | `skills/hancell-budget-report` 신설(d97fe6f) — `hcell_recalc.ps1` 스모크 테스트 통과(오류 0·불일치 0, .cell 저장) — `~/.claude/skills/`에 활성화 |
+| ③ 레슨 | 사교원 위키 `content/망남-신활력/AI와-함께-한셀로-보조사업-예산-집행현황-만들기.md` — v4 **927606b** |
+| ④ 위키배포 | CI 35070484890 성공(501204f, 내 커밋 포함). site master는 다른 세션 빌드 **17e5799**(v4 9dd9f41, 내 페이지 포함·sitemap 103) = **3단계 완료**. 라이브(`sakyowon.co.kr/sakyowon-wiki`)는 sitemap 79건·404 = **4단계 서버 `deploy-www.sh` 실행 대기(SSH)** |
+
+- 병행 세션 주의: 오늘 sakyowon-ai·sakyowon-wiki·sakyowon-wiki-site에 다른 세션이 동시 push 중. add는 자기 파일만, push 전 fetch. sakyowon-wiki-site 작업 클론에는 다른 세션의 미커밋 변경(index.html 등)이 있어 건드리지 않았고, 확인은 스크래치 fresh clone으로 함
+- CI `github-pages` 아티팩트는 1일 보존이며 일부 실행에서는 비어 있음 → 3단계는 로컬 Quartz 빌드(`git worktree add <dir> origin/v4` → `npx quartz build`)가 확실
+
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
