@@ -140,7 +140,7 @@ tags: [실천기술, ...]
 | 1 | 문서를 `deka2026/sakyowon-wiki` **v4**의 `content/<분류>/`에 커밋·push | 수동 |
 | 2 | `Deploy Quartz to GitHub Pages` 워크플로가 빌드 → `github-pages` 아티팩트 | **자동** |
 | 3 | 아티팩트를 `deka2026/sakyowon-wiki-site` **master**에 통째로 반영 | **수동** |
-| 4 | 서버에서 `server/deploy-www.sh` 실행 → `/opt/sakyowon/www/sakyowon-wiki` | **수동(SSH 필요)** |
+| 4 | 서버에서 **`bash /opt/sakyowon/src/deploy-www.sh`** → `/opt/sakyowon/www/sakyowon-wiki` | **수동(SSH 필요)** |
 
 3단계는 로컬 빌드 없이 CI 산출물을 그대로 쓰면 된다 — 내용이 CI와 100% 같아 안전하다.
 
