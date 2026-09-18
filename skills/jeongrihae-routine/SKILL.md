@@ -150,6 +150,21 @@ tar -xf art\github-pages\artifact.tar -C public
 # sakyowon-wiki-site 클론에서 .git 빼고 전부 지우고 public/* 복사 → commit → push
 ```
 
+**`gh run download`가 "no valid artifacts found"로 실패할 때** (2026-09-18 확인):
+Pages 배포가 끝나면 `github-pages` 아티팩트가 목록에서 사라진다. 배포 성공 여부는
+`gh api repos/deka2026/sakyowon-wiki/deployments`로 확인되지만 파일은 못 받는다.
+그럴 때 **같은 런을 rerun하고 build 잡이 끝난 직후** 아티팩트를 API로 직접 받는다
+(로컬 Quartz 빌드 불필요 — CI 산출물과 100% 동일).
+
+```bash
+gh run rerun <runId> --repo deka2026/sakyowon-wiki
+# build 잡 conclusion이 success가 되는 즉시 받는다 (deploy 완료까지 기다리면 또 사라진다)
+gh api "repos/deka2026/sakyowon-wiki/actions/artifacts?per_page=5" --jq '.artifacts[].id'
+gh api repos/deka2026/sakyowon-wiki/actions/artifacts/<artifactId>/zip > art.zip
+unzip -q art.zip -d art && tar -xf art/artifact.tar -C public
+grep -c "<loc>" public/sitemap.xml      # 페이지 수로 내 문서 포함 여부 확인
+```
+
 **분류 폴더**: `연대지능` · `연대지능아카데미` · `에너지-전환` · `자산기반-사회연대경제` · `전남광주` · `망남-신활력` · `메타-기록`(핸드오버 아카이브). 실천기술 레슨은 주제에 맞춰 분산한다.
 
 **frontmatter는 Quartz 관행**(공동위키의 지미 규칙과 다름):

@@ -73,3 +73,24 @@
 
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
+
+---
+
+## 위키배포 결과 (2026-09-18 추기)
+
+| 단계 | 결과 |
+|---|---|
+| 1 | `deka2026/sakyowon-wiki` v4 `content/연대지능/AI로-내-작업환경을-한-장-체계도로-그리기.md` — **e2bbcdb** |
+| 2 | `Deploy Quartz to GitHub Pages` run **35308991680** 성공(attempt 1 배포 완료, 아티팩트 재확보용 rerun) |
+| 3 | `deka2026/sakyowon-wiki-site` master **1ab8ba5** (312 파일 변경, sitemap `<loc>` **105**) |
+| 4 | **서버 반영 대기** — `bash /opt/sakyowon/src/deploy-www.sh` (SSH 필요) |
+
+라이브 확인(셸): `Last-Modified: Thu, 17 Sep 2026 01:05:20 GMT` · sitemap **103** · 새 문서 **404**
+→ **3단계까지 완료, 4단계 서버 반영 대기.** 9/16~9/18 레슨들이 함께 대기 중이다.
+
+### CI 아티팩트 요령 정정 (스킬 반영)
+
+`gh run download`가 "no valid artifacts found"로 실패했다. Pages 배포가 끝나면 `github-pages` 아티팩트가
+목록에서 사라지기 때문이다(배포 자체는 `deployments` API로 성공 확인됨). `gh run rerun` 후 **build 잡이
+끝난 직후** `gh api .../actions/artifacts/<id>/zip`으로 받으면 로컬 Quartz 빌드 없이 3단계를 끝낼 수 있다.
+→ `jeongrihae-routine` SKILL.md ④-2에 추가.
