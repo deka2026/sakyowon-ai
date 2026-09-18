@@ -53,8 +53,12 @@ Claude Code 업데이트도, 재로그인도 필요 없었다 (버전 2.1.218 �
 
 ## 미완료 / 다음 할 일
 
-- [ ] `sakyowon-server`의 Node를 22 이상으로 올리기 — 현재 claude 2.1.276이 미지원 엔진에서 돌고 있음
-- [ ] 모든 세션 자동 연결을 원하면 `~/.claude/settings.json`에 `"remoteControlAtStartup": true` 추가 (사용자 확정 대기)
+- [x] `sakyowon-server`의 Node 22 올리기 — **완료(nvm 병행 설치)**. 시스템 Node는 손대지 않음
+  - 사전 확인: `sakyowon-api`는 Python(uvicorn/venv), `mangnam-vitality`는 `/usr/bin/npm run start`. 둘 다 systemd가 절대경로로 띄우고 systemd는 `~/.bashrc`를 읽지 않으므로 nvm 무관
+  - 절차: 시스템 npm에서 claude 제거 → nvm 설치 → `nvm install 22` → `nvm alias default 22` → Node 22에서 claude 재설치
+  - 결과: `node -v` v22.23.2(`/root/.nvm/...`), `claude --version` 2.1.276(EBADENGINE 사라짐), **`/usr/bin/node -v` v20.20.2·`/usr/bin/npm -v` 10.8.2 그대로**. 라이브 사이트 200 확인
+  - 되돌리기: `rm -rf ~/.nvm` + `~/.bashrc`의 nvm 3줄 삭제
+- [x] 모든 세션 자동 연결 — **완료**. `~/.claude/settings.json`에 `"remoteControlAtStartup": true` 추가(기존 `theme`·`autoMode` 유지, JSON 검증 통과)
 - [ ] (이월) 사교원 위키 레슨 여러 건 **서버 반영(SSH) 대기** — 4단계 `bash /opt/sakyowon/src/deploy-www.sh`
 - [ ] (이월) "300백만원" 해석 확인 대기
 
