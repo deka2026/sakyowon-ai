@@ -76,6 +76,35 @@ GitHub `deka2026` 계정에 2FA가 강제 등록됐다(Supabase를 GitHub 로그
 | `~/haeory-sakyowon-site/server/deploy-www.sh` | 정적 7개 사이트 일괄 배치 |
 | `sakyowon-ai/skills/site-admin-account-recovery/` | 이번 세션에서 만든 스킬 |
 
+## 위키 배포 결과 (정리해 ④)
+
+레슨: 「관리자 계정을 잃었을 때 — 사이트가 아니라 계정 체계를 세는 법」
+
+| 단계 | 결과 |
+|---|---|
+| 1. `sakyowon-wiki` v4 커밋·push | **11a12e8** (다른 세션 커밋 e2bbcdb에 포함되어 빌드) |
+| 2. Deploy Quartz CI | run **35308991680** 성공 (sha e2bbcdb) |
+| 3. `sakyowon-wiki-site` master 반영 | **1ab8ba5** — 다른 세션이 같은 아티팩트로 먼저 수행, 제 레슨 포함 확인(sitemap 105) |
+| 4. 서버 `deploy-www.sh` | **대기 — SSH 필요** |
+
+라이브 확인(3단계 직후): `Last-Modified: Thu, 17 Sep 2026 01:05:20 GMT`, sitemap `<loc>` **103**, 신규 문서 **404**. 즉 아직 반영 전이다.
+
+```bash
+sudo bash /opt/sakyowon/src/deploy-www.sh
+```
+
+이 스크립트는 정적 7개 사이트를 한꺼번에 갱신하므로, 실행 전에 지금 배포하면 곤란한 사이트가 있는지 확인한다.
+
+공동위키에는 올리지 않았다 — 사교원 위키 라이브가 공개라 레슨에서 서버 경로·프로젝트 식별자를 이미 뺐고, 같은 글을 두 곳에 둘 이유가 없었다.
+
+## 스킬 (정리해 ②)
+
+`sakyowon-ai/skills/site-admin-account-recovery/` — 커밋 1ba0fb0, `~/.claude/skills/`에 복사·활성화 확인.
+
+- `SKILL.md` — 계정 체계 매핑 → 인증 방식 특정 → 체계별 복구 경로 → 안전 원칙 → 함정 7가지
+- `scripts/map-sites.sh` — 허브 링크 열거 + 상태·서버 프로브. 라이브 대상 실행 통과(13개 사이트 200)
+- `scripts/reset_sso_password.py` — 통합계정 비번 재설정. 구문 검사 통과, 힙독 금지 사유를 docstring에 명시
+
 ## 약속
 
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
