@@ -110,6 +110,23 @@ Windows 작업 등록 XML: `~/claude-config/scripts/windows-task.xml`
 본 레포 반영 → 서버용 명령 안내까지 수행한다. 병합만은 자동화하지 않는다.
 기억 파일: `feedback-sync-devices-command.md`
 
+## 위키 배포 (2026-09-18~19)
+
+이 세션 내용을 위키 메타-기록에 올렸다. **위키 미러는 public** 이라 서버 주소·호스트명·
+배포키 id·레포명을 모두 빼고 재사용 가능한 방법론으로만 정리했다(푸시 전 grep 재확인).
+상세 기록은 private 인 이 문서에 둔다.
+
+| 단계 | 상태 |
+|---|---|
+| ① `sakyowon-wiki` `v4` 푸시 | 완료 `13bac1f0` |
+| ② Quartz 빌드 → 미러 `sakyowon-wiki-site` 푸시 | 완료 `aae0fa5` (신규 2 · 수정 315 · 삭제 0) |
+| ③ 가비아 서버 `bash /opt/sakyowon/src/deploy-www.sh` | **미실행 — 라이브 404** |
+
+빌드: Quartz v4.5.2, 109문서 → 373파일, 29초.
+미러 반영 방법: 로컬 클론에서 `.git` 외 전부 삭제 후 `public/` 통째 복사 → commit → push.
+사전에 CNAME·숨김 설정파일이 없음을 확인해야 안전하다(이번엔 없었다).
+미러 레포는 Pages 가 꺼져 있어 `gh api .../pages` 가 404 를 준다. 정상이며, 실서빙은 가비아가 한다.
+
 ## 관련 기억
 
 `reference-config-sync.md`, `feedback-sync-devices-command.md`,
