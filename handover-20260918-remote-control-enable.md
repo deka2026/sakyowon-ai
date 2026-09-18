@@ -71,6 +71,31 @@ Claude Code 업데이트도, 재로그인도 필요 없었다 (버전 2.1.218 �
 
 ---
 
+---
+
+## 위키배포 결과 (2026-09-18 15:44)
+
+| 단계 | 내용 | 결과 |
+|---|---|---|
+| 1 | `deka2026/sakyowon-wiki` **v4** `content/연대지능/` 커밋·push | ✅ `a6705a3` |
+| 2 | CI `Deploy Quartz to GitHub Pages` | ✅ 런 `35315838201` (build·deploy 모두 success), 아티팩트 `10534970971`, sitemap **107건** |
+| 3 | 아티팩트를 `sakyowon-wiki-site` master에 반영 | ✅ `80304de` (202파일 변경, 내 문서 포함 확인) |
+| 4 | 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` | ⏳ **대기** — 편지 `9ecc38e` |
+
+**3단계까지 완료, 서버 반영 대기.** 라이브 확인(셸):
+
+```
+Last-Modified: Fri, 18 Sep 2026 05:33:51 GMT   (= 14:33 KST)
+sitemap <loc> 105건
+내 문서 404
+```
+
+**부수 확인**: 라이브 `Last-Modified`가 **오늘 14:33**이고 sitemap이 103 → **105**로 올랐다. 9/16~9/18에 쌓여 있던 대기분 일부가 그 시각에 이미 반영된 것으로 보인다. 이 문서는 그 이후(15:39) push라 다음 반영에 포함된다.
+
+**CI 아티팩트 요령(재확인)**: 이번에는 `gh run download` 대신 **build 잡 완료를 폴링하다가 끝나는 즉시** `gh api repos/.../actions/artifacts/<id>/zip`으로 받았고, deploy 성공 후에도 아티팩트가 목록에 남아 있어 rerun 없이 3단계를 마쳤다. 로컬 Quartz 빌드 불필요.
+
+---
+
 ## 약속
 
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
