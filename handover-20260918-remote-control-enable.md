@@ -84,17 +84,19 @@ Claude Code 업데이트도, 재로그인도 필요 없었다 (버전 2.1.218 �
 | 1 | `deka2026/sakyowon-wiki` **v4** `content/연대지능/` 커밋·push | ✅ `a6705a3` |
 | 2 | CI `Deploy Quartz to GitHub Pages` | ✅ 런 `35315838201` (build·deploy 모두 success), 아티팩트 `10534970971`, sitemap **107건** |
 | 3 | 아티팩트를 `sakyowon-wiki-site` master에 반영 | ✅ `80304de` (202파일 변경, 내 문서 포함 확인) |
-| 4 | 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` | ⏳ **대기** — 편지 `9ecc38e` |
+| 4 | 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` | ✅ **완료** (2026-09-18 17:12 KST) |
 
-**3단계까지 완료, 서버 반영 대기.** 라이브 확인(셸):
+**4단계까지 완료.** 사용자가 서버에서 `deploy-www.sh`를 실행해 라이브 반영을 마쳤다. 확인(셸):
 
 ```
-Last-Modified: Fri, 18 Sep 2026 05:33:51 GMT   (= 14:33 KST)
-sitemap <loc> 105건
-내 문서 404
+Last-Modified: Fri, 18 Sep 2026 08:12:59 GMT   (= 17:12 KST)
+sitemap <loc> 107건
+내 문서 200
 ```
 
-**부수 확인**: 라이브 `Last-Modified`가 **오늘 14:33**이고 sitemap이 103 → **105**로 올랐다. 9/16~9/18에 쌓여 있던 대기분 일부가 그 시각에 이미 반영된 것으로 보인다. 이 문서는 그 이후(15:39) push라 다음 반영에 포함된다.
+**대기 목록 정리**: 기록상 "서버 반영 대기"로 남아 있던 9/16~9/18 레슨 5건(AI 체계도 · 관리자 계정 · 검증 전담 AI · 검토의견 반영 · 한셀 예산)을 전수 확인한 결과 **전부 200**. 일부는 오늘 14:33 반영분에 이미 포함돼 있었다. **사교원 위키 배포 대기는 현재 0건.**
+
+**교훈(반복)**: 대기 목록은 핸드오버에 적힌 상태가 아니라 라이브 sitemap·상태코드로 확인해야 한다. 적어만 두면 이미 해소된 항목이 계속 쌓인다.
 
 **CI 아티팩트 요령(재확인)**: 이번에는 `gh run download` 대신 **build 잡 완료를 폴링하다가 끝나는 즉시** `gh api repos/.../actions/artifacts/<id>/zip`으로 받았고, deploy 성공 후에도 아티팩트가 목록에 남아 있어 rerun 없이 3단계를 마쳤다. 로컬 Quartz 빌드 불필요.
 
