@@ -214,3 +214,41 @@
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
+
+## 이어서 작업 (2026-09-19 오후) — 본부 회신 도착, 데카 몫 2·3·4 완료
+
+**본부 회신 3통**(`haeory-sakyowon-site` main, 로컬이 뒤처져 있어 `git pull` 필요했음):
+- `e79415b` 규격 **v0.2 확정** (`docs/시민재생에너지AI_연동규격서_v0.2_20260919.md`) — doc_type enum 확정, 단계③=ask를 상담탭에 먼저, **village_ref 발급 주체=사교원**, draft/review 프런트 이식 전제 삭제, 한도 분당 20·동시 5, ask 60s·draft/review 110s
+- `9149968` 데카 몫 순서 1~6
+- `eb21066` **`/api/v1/health`·`ask` 라이브**(9/25 약속을 앞당김). 사교원 API 키는 이사장 지메일. 🔴 법령 귀속 문항 5개 이상 요구(EXAONE이 「영농형태양광 발전사업법 제8조」 환각)
+
+**실측(9/19 오후)**
+| 항목 | 값 |
+|---|---|
+| `chat.solarshare.kr/api/v1/health` | **200** `{"ok":true,"backend":"exaone-lora","rag_docs":2000}` |
+| `/api/v1/ask` | 405(POST 전용, 정상) · `draft`·`review` 404(10월 1주) |
+| 햇소자 `/api/villages`·`/api/my/village`·`/api/my/documents` | **401** — 9/18의 404가 해소됨(서버 app.py 갱신 완료) |
+| 햇소자 `/api/ai/chat` | 여전히 "SAKYOWON_ANTHROPIC_KEY 미설정" |
+| `/api/ai/health` | 404(어댑터 미배치, 정상) |
+| 대시보드 기준일 | 2026-06-27 그대로 · GPU Util 8% · 회수 2회 |
+| sakyowon.co.kr/mangnam-site/ | **200 복구** · vitality `/insta` 콘텐츠 채워짐 · `wando.sakyowon.co.kr` 미연결 |
+
+**한 일**
+- 브랜치 `feat/poome-engine-adapter`를 **v0.2로 개정**(`321947f`·`536afe4`·`079a281`)
+  - `villages` 불변 `ref`(V-xxxx) 컬럼+백필(재실행해도 고정), `VILLAGE_FIELDS` 밖이라 PATCH 불가
+  - `parse_sido_sigungu`(시·도 약칭 17종)·`parse_capacity_kw`(kW/MW/GW)·`village_engine_context`(name 미포함)·`village_ref_of_user`
+  - 어댑터: village_ref **서버 조회**(프런트 값 무시), history 최근 10턴·role 필터, topic 허용목록 8종, **stage는 프런트 긴 설명문에서 「직전에 보던 화면: X」만 추출**(규격 의미와 맞춤)
+  - `server/README.md`에 Anthropic 키 투입·엔진 연동·**되돌리는 법** 블록 추가
+  - 스모크 **29/29 통과**, 옛 스키마 DB 백필 별도 검증, main과 충돌 0
+- **대조 문항 15개** main에 올림(`e37a3cf`): 법령 6·공고문 5·검토 2·근거없음 2. 조문은 법제처 계열 1차 출처 확인
+  - 🔴 찾은 것 둘: 전기사업법 제7조 허가권자가 **기후에너지환경부장관**(산업부 아님) / 신재생에너지법 제27조의3은 **원칙 금지+단서 예외** 구조라 "예외 조항"이라 부르면 방향이 뒤집힘
+- 편지 회신(`9a3ee61`): 위 내용 + stage 매핑 결정 통보 + 대시보드 기준일 지적
+
+**남은 것**
+- [ ] 이사장: `/etc/sakyowon-api.env`에 `SAKYOWON_ANTHROPIC_KEY` + `systemctl restart sakyowon-api` (명령은 `server/README.md`)
+- [ ] 이사장: 지메일에서 「[품에 엔진] 사교원 API 키」 수령 → 데카에게 env로만 전달 (지메일 커넥터 미인증이라 Claude가 대신 못 봄)
+- [ ] 이사장: 10월 파일럿 마을 3~5곳 선정 시작
+- [ ] 실장: 교재 1·2부, 콘솔 통계 탭 사용률 읽기(읽기만), 화상 30분 일정 제안
+- [ ] 데카 9/26: 사교원 서버에서 health 200 → 양쪽 대조 → 결과 편지함 → main 병합·배치
+- [ ] 데카 10월 1주: draft·review 나오면 `bizplan_seosik3`부터 전환
+- [ ] (이월) 햇소자 백엔드 4건·회원 문서 열람 API — 본부 응답 대기
