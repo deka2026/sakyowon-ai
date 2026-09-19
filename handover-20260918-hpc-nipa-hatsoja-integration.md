@@ -79,6 +79,19 @@
 
 스킬: `hpc-project-status-check` 커밋 `1a11399`, `~/.claude/skills/`에 활성화, 스모크 통과(Cloudflare 1010 → UA 헤더로 해결). 공동위키에는 올리지 않음(사업 내부 사정 포함).
 
+## 이어서 작업 (2026-09-19 오전)
+
+실측: 위키 4단계 **완료**(00:02 서버 반영, sitemap 111, 레슨 200). 본부 회신 없음, `/api/v1/health` 여전히 404, `SAKYOWON_ANTHROPIC_KEY` 여전히 미설정, 대시보드 기준일 6/27 그대로.
+
+| 완료 | 내용 |
+|---|---|
+| 베타 | 정성평가 추가 문항 15개 초안 — `사교원 허브사이트\정성평가_문항_초안_햇소자서류기반_20260919.md`. ask 8 · review 4 · draft 1 · 근거없음(insufficient 시험) 2. 정답 요소·공고문 쪽 근거·엔진/Anthropic 대조 칸 포함 |
+| 보라 | `app.py` 엔진 어댑터 — `haeory-sakyowon-site` 브랜치 **`feat/poome-engine-adapter`**(push 완료, main 미병합). `POOME_API_BASE` 설정 시 `/api/ai/chat`→`/api/v1/ask`, `GET /api/ai/health` 신설, backend 표시, 503/504 폴백 금지, village_ref만 전송. 목 엔진 스모크 9/9 통과(`server/tests/smoke_poome_adapter.py`). 미설정이면 기존 경로 그대로 |
+
+배치 조건: 규격 v0.2 확정 + 본부 API 키 + 이사장 승인 → main 병합 → 서버 `git pull` + `/etc/sakyowon-api.env`에 `POOME_API_BASE`·`POOME_API_KEY` + `systemctl restart sakyowon-api` → `curl https://sakyowon.co.kr/api/ai/health`.
+
+여전히 사용자 손이 필요한 것: 그룹챗 회신 발송(계획서 8-5절) · Anthropic 키 투입 · 교재 1부 요지 전달(파랑 착수 조건) · 실장 콘솔 로그인·화상 일정.
+
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
