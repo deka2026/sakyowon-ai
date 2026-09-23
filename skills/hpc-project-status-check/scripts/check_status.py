@@ -70,13 +70,21 @@ def check_backend_ai():
     code, _, body = get(AI_CHAT, data=payload, headers={"content-type": "application/json"})
     text = body.decode("utf-8", "ignore")[:300]
     if "SAKYOWON_ANTHROPIC_KEY" in text or "연결되지 않았" in text:
-        state = "NOT_CONNECTED (no key)"
+        state = "NOT_CONNECTED (no key / bad key — message says why)"
+    elif code == 500:
+        # Seen 2026-09-20~23: env held a non-ASCII placeholder for the Anthropic key and the
+        # server still ran code older than commit 1d2b1db (which turns this into a message).
+        state = "SERVER_ERROR 500 (likely bad key value + old server code; pull main & fix env)"
     elif code == 200 and '"answer"' in text:
         state = "ANSWERING"
     else:
         state = f"UNEXPECTED ({code})"
     backend = re.search(r'"backend"\s*:\s*"([^"]+)"', text)
-    return {"status": code, "state": state, "backend_field": backend.group(1) if backend else "(none)"}
+    # adapter deployed? (feat/poome-engine-adapter adds GET /api/ai/health)
+    hcode, _, hbody = get(AI_CHAT.rsplit("/", 1)[0] + "/health")
+    adapter = "deployed" if hcode == 200 else f"not deployed ({hcode})"
+    return {"status": code, "state": state, "backend_field": backend.group(1) if backend else "(none)",
+            "adapter": adapter, "adapter_body": hbody.decode("utf-8", "ignore")[:160]}
 
 
 def check_engine():
@@ -135,6 +143,7 @@ def main():
         ("hatsoja front", f"{f['status']} · {f['size_kb']}KB · {f['last_modified']}"),
         ("front AI calls", f"/api/ai x{f['calls_api_ai']} · /api/ai/chat x{f['calls_api_ai_chat']} · /api/v1 x{f['calls_api_v1']}"),
         ("backend /api/ai/chat", f"{b['state']} · backend={b['backend_field']}"),
+        ("engine adapter on server", f"{b['adapter']} · {b['adapter_body']}"),
         ("engine /api/status", f"{e['status_endpoint']} · {e['status_body']}"),
         ("engine /api/v1/health", f"{e['v1_health']} · {e['v1_health_body']}"),
     ]
