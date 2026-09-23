@@ -102,8 +102,7 @@ EOF
 
 ```bash
 # (1) 모양만: 길이·ASCII·앞 3자
-awk -F= '/^SAKYOWON_ANTHROPIC_KEY=/{v=$2; printf "len=%d ascii=%s prefix=%s
-", length(v), (v ~ /^[ -~]*$/ ? "yes" : "NO"), substr(v,1,3)}' /etc/sakyowon-api.env
+awk -F= '/^SAKYOWON_ANTHROPIC_KEY=/{v=$2; printf "len=%d ascii=%s prefix=%s\n", length(v), (v ~ /^[ -~]*$/ ? "yes" : "NO"), substr(v,1,3)}' /etc/sakyowon-api.env
 ```
 
 ```bash
