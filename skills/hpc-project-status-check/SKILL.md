@@ -95,3 +95,53 @@ EOF
 - 계획서: `D:\사교원 개발그룹\사교원 개발그룹\사교원 허브사이트\고성능컴퓨팅_활용계획_햇소자연동점검_20260918.md`
 - 규격서: `~/haeory-sakyowon-site/docs/시민재생에너지AI_연동규격서_v0.1_20260831.md`
 - 핸드오버: `~/sakyowon-ai/handover-20260918-hpc-nipa-hatsoja-integration.md`
+
+## 8. 서버 env에 비밀키 넣기 — 이사장이 실행하는 4단계 (2026-09-23 실전)
+
+키 값은 어디에도 찍지 않는다. 각 단계는 "이렇게 나오면 통과" 표와 함께 준다.
+
+```bash
+# (1) 모양만: 길이·ASCII·앞 3자
+awk -F= '/^SAKYOWON_ANTHROPIC_KEY=/{v=$2; printf "len=%d ascii=%s prefix=%s
+", length(v), (v ~ /^[ -~]*$/ ? "yes" : "NO"), substr(v,1,3)}' /etc/sakyowon-api.env
+```
+
+```bash
+# (2) 숨김 입력으로 넣기 — nano 붙여넣기는 조용히 실패한다(9/23 len=0 사고). 있으면 바꾸고 없으면 붙인다
+read -rs -p "키를 붙여넣고 Enter: " K; echo; grep -q '^NAME=' /etc/sakyowon-api.env && sudo sed -i "s|^NAME=.*|NAME=$K|" /etc/sakyowon-api.env || echo "NAME=$K" | sudo tee -a /etc/sakyowon-api.env >/dev/null; unset K
+```
+
+```bash
+# (3) 파일 시각 vs 서비스 시작 시각 — 파일이 뒤면 재시작 안 된 것
+echo "file=$(stat -c %y /etc/sakyowon-api.env | cut -c1-19)"; systemctl show sakyowon-api -p ActiveEnterTimestamp
+```
+
+```bash
+# (4) 키만 따로 시험 — 서비스 코드 무관. 값은 명령 안에서 파일로부터 읽힌다
+curl -sS https://api.anthropic.com/v1/messages -H "x-api-key: $(sed -n 's/^SAKYOWON_ANTHROPIC_KEY=//p' /etc/sakyowon-api.env)" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d '{"model":"claude-haiku-4-5-20251001","max_tokens":20,"messages":[{"role":"user","content":"안녕"}]}'
+```
+
+| (4) 응답 | 뜻 |
+|---|---|
+| `"type":"message"` | 키 정상 |
+| `credit balance is too low` | 키 정상, 크레딧 0 → Billing 충전(카드사 3DS 보안프로그램 관문 있음) |
+| `authentication_error` | 키 잘림·비활성 |
+| `anthropic-workspace-id is required` | 키 생성 때 Workspace 미지정 → Delete 후 재발급(Default Workspace 지정) |
+
+## 9. 서버가 받아 가는 미러를 같이 본다
+
+서버는 `deka2026/sakyowon-server`(공개 미러, **평평한 루트**: `app.py`·`tools/`)에서 `git pull` → `cp app.py /opt/sakyowon/server/`. 원본 `haeory-sakyowon-site/server/`를 고쳤어도 **미러에 안 올리면 서버 pull은 아무 일도 안 한다**(9/23: 미러가 9/18에 멈춰 500 방지 코드가 안 감). 역방향도 있다 — 미러에만 직접 고친 파일(deploy-www.sh·setup-apps.sh)이 있었다. 동기화 전 `cmp`로 어느 쪽이 새것인지 파일마다 확인.
+
+```bash
+git clone -q https://github.com/deka2026/sakyowon-server.git /tmp/mirror && cd /tmp/mirror
+for f in app.py .env.example deploy-www.sh setup-apps.sh; do cmp -s ~/haeory-sakyowon-site/server/$f $f || echo "DIFF $f"; done
+```
+
+## 10. 대조 시험 실행기와 401 읽는 법
+
+`~/haeory-sakyowon-site/server/tools/compare_ask.py`(미러 `tools/`). 서버에서 `sudo python3 /opt/sakyowon/src/tools/compare_ask.py` → `/opt/sakyowon/data/compare/compare_<stamp>.md`. 엔진이 401이면 **키 없이/엉뚱한 키로도 같은 문구인지** 먼저 본다 — 같으면 엔진이 우리 키를 모르는 것(본부 등록 문제), 우리 쪽 3회 이상 반복 금지.
+
+## 11. 함정 추가: Sonnet 5 기본 thinking이 답을 비운다
+
+`max_tokens` 1500에 thinking 미지정이면 생각에 토큰을 다 쓰고 `text`가 빈 채 `output_tokens=1500`으로 끝난다(9/23 15건 중 4건). 단발 답변 경로는 `"thinking": {"type": "disabled"}` + 여유 있는 max_tokens. 프록시(`/api/ai`)는 클라이언트 미지정 시 `setdefault`로 주입.
+
