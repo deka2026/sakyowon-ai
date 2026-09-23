@@ -111,6 +111,20 @@
 
 **남은 일(누구):** 이사장 — ①서버 키 값 수정+코드 pull+재시작(계획서 9-3 명령 4단계) ②품에 API 키 env 투입 ③서버에서 health curl ④파일럿 마을 선정 / 실장 — 교재·콘솔 읽기·화상 일정(기록 없음, 확인 필요) / 데카 — 9/26 main 병합·배치·대조 실행·결과 편지 / 본부 — 대시보드 갱신·draft/review 10월 1주·3,000kW 조문·stage 규칙 회신
 
+## 이어서 작업 (2026-09-23 오후) — 이사장 실행: 키 투입·어댑터 배치·대조 1차
+
+| 한 것 | 결과 |
+|---|---|
+| Anthropic 키 | 콘솔에서 재발급(Default Workspace 범위) → `read -rs`로 env 투입(nano 붙여넣기 실패 사고 1회) → 하나카드 3DS 보안프로그램 관문 넘고 크레딧 충전 → 직접 curl `type:message` ✅. **햇소자 상담·번역 라이브** |
+| 500 원인 | env 키 줄이 `SAKYOWON_ANTHROPIC_KEY=`(빈 값)였음 + 옛 코드. 미러 동기화 후 pull로 해소 |
+| 어댑터 | main 병합(096cda2) → 미러 f73f8dd → 서버 배치. `/api/ai/health` = `not_configured`(BASE 미설정 대기) ✅ 회귀 없음 |
+| 품에 키 | 메일 값 투입(86자, 앞자리·길이 일치, `X-API-Key`) → **엔진 `/api/v1/ask` 15건 전부 401** "키가 없거나 올바르지 않습니다". 키 없이/엉뚱한 키도 같은 문구 → 본부 미등록 또는 재기동 소실 추정. 편지 발송(15:20) |
+| 대조 스크립트 | `server/tools/compare_ask.py` 신설(93d5fec, 목 스모크 통과). 서버에서 `sudo python3 /opt/sakyowon/src/tools/compare_ask.py` → `/opt/sakyowon/data/compare/compare_<stamp>.md` |
+| **발견 결함** | Sonnet 5 기본 thinking이 max_tokens 1500 소진 → 15건 중 4건 빈 답·2건 잘림. `/api/ai/chat`(2500+disabled)·`/api/ai`(미지정 시 disabled 주입)·스크립트 수정(7259676, 미러 ba2c572). 이사장 pull 필요 |
+| Anthropic 기준선 | A-2·A-3·A-4 정답 / B-1·B-2·B-4 "모른다" / **B-3 지어냄(500~750)** / D-1·D-2 정답 / 4건 빈 답(재실행 대상) |
+
+다음: 본부 키 등록 확인 회신 → `compare_ask.py` 재실행 → 판정표 → ③단계(`POOME_API_BASE` 한 줄 + 재시작). 이사장 명령 블록은 계획서 9-3·9-4.
+
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
