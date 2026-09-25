@@ -111,9 +111,10 @@ def check_dashboard():
     return {
         "status": code,
         "as_of": grab(r"기준일:\s*([0-9-]+)"),
-        "gpu_util_avg": grab(r"~?(\d+%)\s*GPU Util 평균"),
+        # 9/23 개편 문구: "실부하 GPU Util 15.9%" (6/27판은 "~8% GPU Util 평균")
+        "gpu_util_avg": grab(r"실부하 GPU Util\s*([\d.]+%)") or grab(r"~?([\d.]+%)\s*GPU Util 평균"),
         "reclaim_incidents": grab(r"회수 사고\s*(\d+)회"),
-        "accuracy": grab(r"공고문 질의 정답률[^0-9]*(\d+%)"),
+        "accuracy": grab(r"공고문 질의 정답률[^%]*?([\d.]+%)"),
         "dataset": grab(r"인스트럭션 데이터셋[^0-9]*([\d,]+건)"),
         "pilot_villages": grab(r"실증 마을[^0-9]*(\d+개)"),
         "v1_api_mentioned": "/api/v1" in t,
@@ -165,14 +166,20 @@ def main():
     for k, v in rows:
         print(f"| {k} | {v} |")
 
-    # one-line verdict
-    linked = b["state"] == "ANSWERING" and b["backend_field"] not in ("(none)", "anthropic")
-    v1 = e["v1_health"] == 200
+    # one-line verdict — 어댑터 health(backend:poome, ok:true)와 상담 응답의 backend 값으로 판정
+    ah = b.get("adapter_body", "")
+    adapter_on = '"backend":"poome"' in ah.replace(" ", "") and '"ok":true' in ah.replace(" ", "")
+    chat_engine = b["state"] == "ANSWERING" and b["backend_field"] not in ("(none)", "anthropic", "none")
     print()
-    print("VERDICT: hatsoja->HPC engine linked" if linked and v1 else
-          "VERDICT: hatsoja NOT linked to HPC engine"
-          + ("" if v1 else " (engine /api/v1/health not up)")
-          + ("" if b["state"] == "ANSWERING" else " (backend AI not answering)"))
+    if adapter_on and chat_engine:
+        print(f"VERDICT: hatsoja chat tab LINKED to HPC engine (backend={b['backend_field']})")
+    elif adapter_on:
+        print("VERDICT: adapter ON but chat answered by non-engine backend — check POOME_API_KEY / engine 5xx")
+    else:
+        print("VERDICT: hatsoja NOT linked to HPC engine"
+              + ("" if e["v1_health"] == 200 else " (engine /api/v1/health not up)")
+              + ("" if b["state"] == "ANSWERING" else " (backend AI not answering)")
+              + (" (adapter deployed, POOME_API_BASE unset)" if b.get("adapter", "").startswith("deployed") else ""))
 
 
 if __name__ == "__main__":
