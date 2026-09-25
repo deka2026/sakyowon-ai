@@ -51,3 +51,11 @@ SQLD 과정은 같은 날 병행 세션이 신설한 것(`5fde02d`, 10회차·�
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
+
+## 위키배포 결과 (정리 루틴 ④, 2026-09-25 19:20 KST)
+
+- 사교원 위키 v4 **ddfa3e8**(병행 세션 f5558c0 위에 rebase) → CI run 36122331038 success. deploy 잡까지 끝나 아티팩트가 사라져 **rerun 후 build 직후** 받음(스킬 jeongrihae-routine ④-2 절차) → sitemap **128**쪽(126 + 레슨·핸드오버 2)
+- `deka2026/sakyowon-wiki-site` master: 원격에 병행 세션 빌드(2126f00, 126쪽)가 먼저 있어 첫 push 거부 → `reset --hard origin/master` 후 아티팩트 재적용·재커밋·push = **3단계 완료**
+- **4단계(서버 반영) 대기** — `bash /opt/sakyowon/src/deploy-www.sh`. 실행 전 라이브: `Last-Modified` 09:48 GMT, sitemap 126
+- 확인 URL: https://sakyowon.co.kr/sakyowon-wiki/연대지능아카데미/AI와-함께-자격증-학습과정을-20회차로-설계하고-검증하기 (반영 후 sitemap 128·200이면 완료)
+- 함정 기록: 같은 날 병행 세션이 v4·site master 양쪽에 push하므로 **두 레포 모두 fetch 후 behind 확인**. site 레포는 내용 전체 치환이라 rebase 대신 reset 후 재적용이 맞다
