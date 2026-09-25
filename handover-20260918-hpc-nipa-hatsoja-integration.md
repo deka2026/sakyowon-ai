@@ -151,6 +151,14 @@
 - **권고**: ③ 상담 탭만 엔진으로(`POOME_API_BASE` 투입), 법령 탭은 Anthropic 유지(게이트 후 재시험 4/6 조건). 이사장 결정 대기.
 - 대시보드 9/23 갱신 확인(88.7%·29,207건·GPU 15.9%). `check_status.py` 대시보드 정규식은 새 문구에 안 맞아 gpu_util 오독(90%) — 수정 필요.
 
+## ③단계 라이브 (2026-09-25 11:00)
+
+- 이사장 결정 후 `POOME_API_BASE=https://chat.solarshare.kr` 투입·재시작. `/api/ai/health` ok:true backend:poome. **상담 탭 `/api/ai/chat` → exaone-lora**(근거 9건, insufficient 표시 동작, request_id req_a32ac23c9cea·req_dbd0164a45b7). `/api/ai`·`/api/translate`는 Anthropic 유지(의도).
+- 되돌리기: `sudo sed -i '/^POOME_API_BASE=/d' /etc/sakyowon-api.env && sudo systemctl restart sakyowon-api`
+- 편지 11:05(③ 완료·호출기록 확인 요청). 규격 7절 진행: ①②③ 완료 / ④ draft·review 10월 1주 / ⑤ 전면 / ⑥ 파일럿.
+- **다음 데카 과제**: (보라) 상담 탭 프런트에 `sources`·`insufficient`·`backend` 표시 — 지금은 답 본문만 보임. (베타) `check_status.py` 대시보드 정규식 갱신(9/23 문구) + VERDICT를 backend 값으로 판정. (파랑) 중간점검 서면 「사교원 프런트 연동 완료 2026-09-25」 문구.
+- 대기: 실장 3건 + 영농형태양광법 제8·10조 눈 확인, 파일럿 마을 목록, 본부 결함 3건 회신·법령 재시험.
+
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
