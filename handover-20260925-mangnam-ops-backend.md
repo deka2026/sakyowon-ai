@@ -30,16 +30,16 @@
 - 스킬 `mangnam-coop-deploy`에 "조합 운영 백엔드" 절 추가, 신규 스킬 `sakyowon-server-extension-module`.
 
 ## 미완료 / 다음 할 일
-- [ ] **이사장님 SSH** ① `curl -fsSL https://raw.githubusercontent.com/deka2026/mangnam-coop/main/server/install-on-server.sh | sudo bash` ② `sudo bash /opt/sakyowon/src/deploy-www.sh` → `curl -s https://sakyowon.co.kr/api/mangnam/health` JSON 확인
+- [x] **이사장님 SSH 반영 완료 (2026-09-25 13:14 KST 실측)** — `/api/mangnam/health` 200 JSON, 사이트 `/admin/*`·`/disclosure/`·`/performance/` 200(Last-Modified 04:14 GMT). 원 명령: ① `curl -fsSL https://raw.githubusercontent.com/deka2026/mangnam-coop/main/server/install-on-server.sh | sudo bash` ② `sudo bash /opt/sakyowon/src/deploy-www.sh` → `curl -s https://sakyowon.co.kr/api/mangnam/health` JSON 확인
 - [ ] 반영 후 실서버에서 관리 화면 로그인(통합계정) 1회 실증, 첫 공시 자료(정관·2025 결산) 실제 게시
 - [ ] `/opt/sakyowon/data/files/mangnam/` 첨부 폴더를 DB 백업 루틴에 포함(기존 백업 미완 항목과 함께)
-- [ ] 위키 레슨 서버 반영(4단계) — 위 deploy-www.sh 한 번이면 사이트 정적과 함께 반영됨
+- [x] 위키 레슨 서버 반영(4단계) — 완료. 라이브 `Last-Modified` 04:14 GMT, sitemap `<loc>` 122, 레슨·핸드오버 아카이브 200
 - [ ] (이월) 정관 빈칸 10곳 확정 → 마을민박 운영방식 → 산업분류 세세분류 (설립 서류)
 
 ## 위키배포 결과 (정리해 ④)
 - 레슨 「AI와 함께 협동조합 운영 백엔드(회계·회의록·경영공시) 만들기」 `content/망남-신활력/` + 핸드오버 아카이브 `content/메타-기록/핸드오버-2026-09-25-망남-운영-백엔드.md`
 - 1단계 v4 **7d37981** → 2단계 CI run 36093166967 success(build 잡 직후 artifact 10846586821 확보, sitemap 122) → 3단계 site master **158d9dc** push
-- 4단계 **서버 반영 대기**. 라이브 실측: `Last-Modified` 2026-09-25 04:09 GMT, sitemap `<loc>` 120, 신규 레슨 404
+- 4단계 **완료**(사용자가 deploy-www.sh 실행). 라이브 실측 13:14 KST: `Last-Modified` 04:14 GMT, sitemap `<loc>` 120→**122**, 신규 레슨·핸드오버 아카이브 **200**. **위키 배포 대기 0건**
 
 ## 파일 위치
 | 경로 | 내용 |
