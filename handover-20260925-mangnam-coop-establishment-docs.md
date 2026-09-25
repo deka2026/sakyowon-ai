@@ -107,7 +107,7 @@
 | ① 핸드오버 | 이 파일. `sakyowon-ai` master **d515082** |
 | ② 스킬 | **`md-to-hwpx-docset`** 신설 — `gen.py`(md→hwpx 세트) · `verify.py`(구조 검증) · `probe_styles.py`(서식 채록) · `contact_sheet.py`(조판 눈 검수). 스모크 3종 통과, `.claude/skills/`에 복사해 활성화 |
 | ③ 레슨 | 「AI와 함께 마을협동조합 설립서류 한 벌 만들기」 → `sakyowon-wiki` v4 `content/망남-신활력/`, 커밋 **acc201e** |
-| ④ 위키배포 | **3단계까지 완료, 서버 반영 대기** |
+| ④ 위키배포 | ✅ **4단계까지 완료 — 라이브 반영 확인** |
 
 **위키 배포 사슬 상태**
 
@@ -116,14 +116,18 @@
 | 1 | v4 `content/망남-신활력/`에 커밋·push | ✅ acc201e |
 | 2 | `Deploy Quartz to GitHub Pages` CI | ✅ run 36090994418, build·deploy 모두 success |
 | 3 | 아티팩트(10845426969)를 `sakyowon-wiki-site` master에 반영 | ✅ **c3f8865**, 문서 118개 |
-| 4 | 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` | ⏳ **대기 — SSH 키가 없어 사용자 실행 필요** |
+| 4 | 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` | ✅ **2026-09-25 사용자 실행 완료** |
 
-라이브 실측(4단계 전): `Last-Modified` 2026-09-25 03:15 GMT, sitemap `<loc>` **117**, 신규 문서 **404**.
-4단계 실행 후 118과 200으로 바뀌면 완료다.
+**라이브 실측 (셀로 확인, 어림 아님)**
 
-```bash
-curl -sS "https://sakyowon.co.kr/sakyowon-wiki/sitemap.xml" | grep -c "<loc>"    # 118 이어야 함
-```
+| 항목 | 4단계 전 | 4단계 후 |
+|---|---|---|
+| `Last-Modified` | 2026-09-25 03:15 GMT | **03:53 GMT** |
+| sitemap `<loc>` | 117 | **118** |
+| 신규 레슨 문서 | 404 | **200** (49,050 bytes) |
+
+본문에 "마을협동조합 설립서류"·"우선출자"·"가지번호"·"39개 항목"이 실제로 들어 있는 것까지 확인했다.
+기존 문서 표본(망남-신활력 분류 색인, 한셀 예산 레슨, 위키 루트) 전부 200. 망남-신활력 분류는 9건.
 
 ---
 
