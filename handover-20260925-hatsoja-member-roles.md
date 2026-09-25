@@ -36,7 +36,7 @@
 
 - 인라인 스크립트 문법 검사(node `new Function`) 통과. 로컬 정적 서버(python http.server)에서 4등급 데모 로그인·차단 리다이렉트·드롭다운·모바일 ☰·미리보기 시작/복귀 확인.
 - PR #1 머지(`--merge --delete-branch`) → Pages 빌드 run 36092166331 success(12:53 KST).
-- **실사이트 반영은 빌드 성공 후 약 3분 뒤(12:56)** — 그 사이 `curl`은 옛 파일(587,290바이트, `renderMemberSidebar` 존재)을 돌려줬다. 쿼리스트링을 붙여도 옛 파일이었으니 CDN 캐시가 아니라 원본 전파 지연. 15초 간격 폴링 5회째에 새 코드(`ROLE_MENUS`) 등장. 이후 sakyowon.co.kr/hatsoja/ 에서 4등급 데모 실동작 확인.
+- 실사이트 반영은 12:56에 확인(4등급 데모 실동작). **정정(13:35)**: 이것은 "Pages 전파 3분 지연"이 아니었다. sakyowon.co.kr은 GitHub Pages가 아니라 **자체서버(Caddy, 1.201.116.225)** 가 `deploy-www.sh`로 deka2026.github.io main을 clone해 서빙하며, 12:56은 사용자가 다른 건으로 서버 스크립트를 돌린 시각이었다. PR #2는 머지 후 10분 폴링해도 안 바뀌어 규명. 스킬·메모리·레슨의 해당 문구를 모두 고쳤다.
 
 ### 4. 저장
 
@@ -45,7 +45,7 @@
 ## 미완료 / 다음 할 일
 
 - [ ] **서버(통합계정)에 `federation` role 값 신설 요청** — 현재 `/api/auth/me`가 주는 role에 연합회가 없어 실계정 연합회 등급은 동작 불가(데모·미리보기는 됨). 본부(지미)에 편지: 계정 role 값에 `federation` 추가 + 관리자 회원관리에서 지정 가능하게. (이월) 9/6 편지의 백엔드 4건과 함께
-- [x] **해소(13:20)**: 연합회는 조합·마을 화면 열람 전용 — PR #2 → main **7c487ce**. `isAdminUser()`/`requireAdmin()` 헬퍼, 등록·삭제·편집·담당자 배정 숨김 + 함수 가드. 공모·심사(`adm/contest`) 버튼은 데모 토스트뿐이라 그대로
+- [x] **해소(13:20)**: 연합회는 조합·마을 화면 열람 전용 — PR #2 → main **7c487ce**. **라이브 반영은 서버 스크립트 대기**(사용자 `bash /opt/sakyowon/src/deploy-www.sh`) — 실행 후 `requireAdmin` 문자열로 확인. `isAdminUser()`/`requireAdmin()` 헬퍼, 등록·삭제·편집·담당자 배정 숨김 + 함수 가드. 공모·심사(`adm/contest`) 버튼은 데모 토스트뿐이라 그대로
 - [ ] `hatsoja/manual.html`(이용안내)에 등급 4단계 설명 절 추가 — 이번엔 손대지 않음
 - [ ] (이월) HPC 연동 후속 — handover-20260918 미완료 목록 참조
 

@@ -1,13 +1,13 @@
 ---
 name: hatsoja-site-deploy
-description: 햇소자 사이트(deka2026.github.io/hatsoja, 단일 파일 SPA)를 수정하고 PR→머지→GitHub Pages→실사이트(sakyowon.co.kr/hatsoja) 반영 확인까지 수행하는 스킬. "햇소자 메뉴 고쳐줘", "회원등급 바꿔줘", "햇소자 수정해서 반영해줘" 같은 요청에 사용. 등급별 메뉴·권한은 ROLE_MENUS 표 한 곳만 고치면 되고, 라이브 확인은 빌드 성공 후 3분쯤 폴링해야 한다.
+description: 햇소자 사이트(deka2026.github.io/hatsoja, 단일 파일 SPA)를 수정하고 PR→머지→GitHub Pages→실사이트(sakyowon.co.kr/hatsoja) 반영 확인까지 수행하는 스킬. "햇소자 메뉴 고쳐줘", "회원등급 바꿔줘", "햇소자 수정해서 반영해줘" 같은 요청에 사용. 등급별 메뉴·권한은 ROLE_MENUS 표 한 곳만 고치면 된다. 라이브(sakyowon.co.kr)는 GitHub Pages가 아니라 자체서버(Caddy)라 push 뒤 사용자가 서버에서 deploy-www.sh를 돌려야 바뀐다.
 ---
 
 # 햇소자 수정→배포 절차
 
 ## 저장소·구조
 
-- GitHub `deka2026/deka2026.github.io` (기본 브랜치 **main**, push→Pages 자동배포, CNAME = sakyowon.co.kr)
+- GitHub `deka2026/deka2026.github.io` (기본 브랜치 **main**). Pages 빌드는 자동이지만 **라이브 sakyowon.co.kr은 GitHub Pages가 아니다** — 가비아 자체서버(Caddy, 1.201.116.225)가 `deploy-www.sh`로 이 레포 main을 clone해 서빙한다. deka2026.github.io는 301로 sakyowon.co.kr로 보낸다
 - 햇소자는 `hatsoja/index.html` **한 파일**(약 600KB, HTML+CSS+JS 인라인) + `manual.html`(이용안내) + `manifest.json`
 - 로컬 클론은 상시 없음. `C:\Users\User\AppData\Local\Temp\hub-clone`이 있으면 재사용, 없으면:
   ```bash
@@ -15,7 +15,7 @@ description: 햇소자 사이트(deka2026.github.io/hatsoja, 단일 파일 SPA)�
   ```
   (긴 한글 경로에서 git이 거부한 적이 있어 Temp에 둔다)
 - **작업 전 `git fetch` + `git status -sb`** — 다른 세션이 main에 push한다
-- 라이브: https://sakyowon.co.kr/hatsoja/ (캐노니컬 deka2026.github.io/hatsoja는 301로 여기로 옴)
+- 라이브: https://sakyowon.co.kr/hatsoja/ — `Server: Caddy`. 서버 반영 스크립트 원본 `C:\Users\User\haeory-sakyowon-site\server\deploy-www.sh`(deka2026.github.io main → 루트, academy-site, sakyowon-wiki-site 순서로 clone·재배치)
 
 ## 코드 지도 (`hatsoja/index.html`, 2026-09-25 기준)
 
@@ -74,12 +74,20 @@ gh run watch <runId> --exit-status
 
 사용자가 "바로 반영해"라면 main에 직접 push해도 된다(Pages 트리거는 같다). 커밋 메시지 한국어 제목 + Co-Authored-By 푸터.
 
-## 라이브 확인 — 빌드 success ≠ 라이브
+## 라이브 반영 — Pages 빌드 success ≠ 라이브 (서버 스크립트가 필요)
 
-Pages 빌드가 success여도 **원본 반영까지 약 3분** 걸린다(2026-09-25: 12:53 success → 12:56 반영). 쿼리스트링을 붙여도 옛 파일이 오니 CDN 캐시 문제가 아니다. 반드시 폴링한다.
+| 단계 | 내용 | 누가 |
+|---|---|---|
+| 1 | main에 머지/push | AI |
+| 2 | `pages build and deployment` 성공 — **라이브와 무관**(CNAME이 자체서버를 가리킴) | 자동 |
+| 3 | 서버(root@sakyowon-server)에서 `bash /opt/sakyowon/src/deploy-www.sh` | **사용자(SSH)** |
 
+push가 끝나면 사용자에게 3단계 한 줄을 요청하고 "실행했다"는 답을 받은 뒤 확인한다. **2026-09-25 함정**: 첫 배포 때 머지 3분 뒤 라이브가 바뀌어 "Pages 전파 지연"으로 오해했는데, 실제로는 그 시각에 사용자가 다른 건으로 서버 스크립트를 돌린 것이었다. 두 번째 배포(PR #2)는 10분을 폴링해도 안 바뀌었다. `curl -sI ... | grep -i server`가 `Caddy`면 폴링은 무의미하다.
+
+확인은 셸로 — 고유 문자열이 나와야 반영이다:
 ```bash
-for i in $(seq 1 12); do n=$(curl -s "https://sakyowon.co.kr/hatsoja/index.html?v=$(date +%s%N)" | grep -c "<이번 변경의 고유 문자열>"); echo "try $i: $n"; [ "$n" -gt 0 ] && break; sleep 15; done
+curl -sI "https://sakyowon.co.kr/hatsoja/" | grep -iE "^(server|last-modified)"
+curl -s "https://sakyowon.co.kr/hatsoja/index.html?v=$(date +%s)" | grep -c "<이번 변경의 고유 문자열>"
 ```
 
 새 코드가 보이면 브라우저로 `https://sakyowon.co.kr/hatsoja/?v=2#/pub/home` 열고 위 등급 점검 JS를 한 번 더 돌린다. 이전에 열어 둔 브라우저는 Ctrl+F5.
@@ -91,3 +99,4 @@ for i in $(seq 1 12); do n=$(curl -s "https://sakyowon.co.kr/hatsoja/index.html?
 3. 체험 띠(`#demoBar`)는 unified가 아닌 사용자면 모든 scope에서 보인다(등급 전환용). 실계정에는 안 보인다
 4. 서버 `/api/auth/me`의 role에는 아직 `federation`이 없다 — 실계정 연합회는 본부가 role 값을 줘야 동작
 5. 사본을 `D:\...\햇빛발전협동조합 업무자동화 사이트\`에 남길 때 `hatsoja/` 폴더째 복사하면 파일로 열어도 데모 모드로 동작한다
+6. 연합회는 `adm/villages`를 **열람 전용**으로 본다(2026-09-25 PR #2) — 편집 진입점은 `isAdminUser()`/`requireAdmin()`로 막는다. 관리 화면을 연합회에 새로 열 때 같은 가드를 붙일 것
