@@ -62,3 +62,10 @@
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행
+
+## 위키배포 결과 (정리 루틴 ④, 2026-09-25 14:25 KST)
+
+- 사교원 위키 v4 **ef24aa8** → CI `Deploy Quartz to GitHub Pages` run 36094124094 success → 아티팩트(sitemap 124쪽, 신규 2쪽 포함) → `deka2026/sakyowon-wiki-site` master **4ac301f** = **3단계 완료**
+- **4단계(서버 반영) 대기** — 사용자가 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` 실행 필요. 실행 전 라이브 실측: `Last-Modified` 04:16 GMT, sitemap 122, 신규 문서 404
+- 확인 URL: https://sakyowon.co.kr/sakyowon-wiki/연대지능아카데미/AI-실습-안내를-프롬프트-카드로-바꾸기 (반영 후 sitemap 124·상태 200이면 완료)
+- 스킬 `academy-site-deploy`는 `C:\Users\User\.claude\skills\`에 복사·활성화 완료. 메모리(`project-sakyowon-resume`, `project-academy-site-practice-menu`) 현행화
