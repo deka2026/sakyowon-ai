@@ -1,6 +1,6 @@
 ---
 name: hwpx-powershell-edit
-description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정·생성하는 스킬. .hwpx 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 수정 부분 빨간색 표시(교정본), 재패키징, 그리고 기존 문서를 템플릿 삼아 요약본 등 새 문서를 표(hp:tbl) 포함으로 조립할 때 사용. 대량 교정(수십~수백 건)에는 인덱스 기반 경로를 쓴다. HWP(구형 바이너리)는 불가 — hwpx만 지원.
+description: 한글 문서(.hwpx)를 Python·pandoc 없이 Windows PowerShell만으로 읽고 수정·생성하는 스킬. .hwpx 내용 추출, 문단 텍스트 교체, 새 절·문단 삽입, 수정 부분 빨간색 표시(교정본), 재패키징, 그리고 기존 문서를 템플릿 삼아 요약본 등 새 문서를 표(hp:tbl) 포함으로 조립할 때 사용. 대량 교정(수십~수백 건)에는 인덱스 기반 경로를 쓴다. 편집·생성은 hwpx만 가능하고 구형 .hwp를 직접 뜯어 고치지는 못하지만, 완성된 hwpx를 한글 COM으로 .hwp 제출본으로 변환할 수 있다(경로 H) — "한글파일로 만들어줘"가 .hwp를 뜻할 때 쓴다.
 ---
 
 # HWPX 문서 편집 (PowerShell 전용)
@@ -253,14 +253,30 @@ from patch_body_12pt import clear_red
 clear_red('..._교정_v1.0.hwpx', '..._최종.hwpx')   # 되돌린 charPr id 목록 반환
 ```
 
-### F-3. 생성 직후 검수 3단계 — 이 순서를 건너뛰지 말 것
+### F-3. 생성 직후 검수 4단계 — 이 순서를 건너뛰지 말 것
 
 ```python
-from docutil import patch_table, fix_tbl_ids, audit
+from docutil import patch_table, fix_tbl_ids, sanitize_package, audit
 d = patch_table(HwpxDoc('tpl_12pt.hwpx', styles=STYLES))   # ① 셀 정규화 래퍼 필수
 ...
-d.save(out); fix_tbl_ids(out); print(audit(out))           # ② 표 id 유일화 + 지표
+d.save(out)
+fix_tbl_ids(out)                                           # ② 표 id 유일화
+sanitize_package(out, '문서 제목',                          # ③ 템플릿 잔재 제거 (필수)
+                 '2026-09-18T00:00:00Z', '2026년 9월 18일 금요일')
+print(audit(out))                                          # ④ 지표
 ```
+
+**③을 빠뜨리면 템플릿의 `Preview/PrvText.txt`·`PrvImage.png`가 그대로 딸려 간다.**
+탐색기 미리보기와 검색 인덱스에 **이전 문서 1쪽이 통째로** 뜬다 — 회의록 템플릿이면 참석자
+실명이 새 문서에 붙어 외부로 나간다(2026-09-18 실제 발생). Preview 파일만 지우는 것으로는
+부족하다. **`META-INF/container.xml`이 `Preview/PrvText.txt`를 `<ocf:rootfile>`로 선언**하므로
+그 선언도 함께 지워야 끊긴 참조가 남지 않는다(같은 날 2차 회귀로 발생). `content.hpf`의
+`opf:manifest`, `META-INF/manifest.xml`, `container.rdf`에는 참조가 없다. `sanitize_package`는
+둘을 한 번에 처리하고, 남은 rootfile이 실제 zip 항목인지 검사한 뒤
+`opf:title`·`CreatedDate`·`ModifiedDate`·`date`도 새 값으로 바꾼다.
+
+> 템플릿 잔재를 점검할 때는 **zip 전체 항목**을 훑을 것. `Contents/` 아래만 보면 놓친다.
+> `zipfile.ZipFile(p).namelist()`를 먼저 찍고 각 항목을 디코드해 검색한다.
 
 | 지표 | 정상 범위 | 벗어나면 |
 |---|---|---|
@@ -326,3 +342,76 @@ gh api -H "Accept: application/vnd.github.raw" "repos/<o>/<r>/contents/<path>?re
 1. python-hwpx `ensure_run_style`은 속성이 같은 스타일을 **같은 id로 합친다**(C_CELL과 C_BODY가 모두 12pt면 하나). 후처리 보고의 id 개수가 스타일 변수 수보다 적어도 정상.
 2. python-hwpx 산출물의 빈 셀 문단은 `charPrIDRef="0"`(기본 10pt)을 참조하므로 0번도 함께 올라간다. 쪽번호 각주(`- 1 -`)도 0번이라 12pt가 된다 — 문제 되면 `--no-font` 후 `patch_body_12pt`로 선택 적용.
 3. 셀 LEFT 사본은 문서 전체 paraPr 뒤에 붙는다. 한글이 재저장하면 id가 재매핑되므로(함정 8) 다음 편집 전 재채록.
+
+## 경로 H — 구형 .hwp 제출본 만들기 (`scripts/hwpx_to_hwp.ps1`)
+
+2026-09-25 실증. **"한글파일로 만들어줘"는 대개 .hwp를 뜻한다.** 이미 hwpx를 건넨 뒤에 이 말이 나왔다면 거의 확실히 구형 포맷 요청이다 — 되묻기 전에 이 경로를 먼저 떠올릴 것. 관공서 제출·메일 첨부는 여전히 .hwp를 요구하는 곳이 많다.
+
+XML을 직접 만들 수는 없지만 **한글 COM의 `SaveAs(path, "HWP", "")`가 변환해 준다.** 이 스킬로 hwpx를 완성한 뒤 마지막에 한 번 돌리면 된다.
+
+```powershell
+# 변환 (한글 보안 확인창 자동 처리)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run_auto.ps1 `
+  -Script scripts\hwpx_to_hwp.ps1 -HwpxPath "out.hwpx"
+# → pages=38 / hwp=...\out.hwp
+
+# 검증: 변환본을 다시 열어 쪽수와 본문 확인
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run_auto.ps1 `
+  -Script scripts\hwp_verify.ps1 -HwpxPath "out.hwp"
+# → pages=38 / txt=...\out.verify.txt  (확인 후 지울 것)
+```
+
+- `run_auto.ps1`은 `pagecount_auto.ps1`의 범용판이다 — `-Script`로 아무 COM 워커나 받고, 시작 전부터 떠 있던 Hwp 프로세스는 건드리지 않으며 보안 확인창만 Alt+N으로 닫는다. 새 COM 워커를 쓸 때마다 dismissal 로직을 다시 짜지 말고 이걸 감싸 쓸 것.
+- `hwpx_to_hwp.ps1`은 hwpx를 `"HWPX"` 포맷으로 열고 `"HWP"`로 SaveAs한다. `-HwpPath`로 출력 경로 지정 가능(기본은 확장자만 교체).
+- `hwp_verify.ps1`은 .hwp를 `"HWP"`로 다시 열어 `PageCount`와 TEXT 덤프를 낸다. **변환만 하고 끝내지 말 것** — 열어서 쪽수와 장 제목이 그대로인지 보는 것까지가 완료다(경로 F-3 ③과 같은 원칙).
+
+### 경로 H 함정
+1. **변환·검증은 각각 별개 프로세스로.** 한 프로세스에서 open→save→quit→reopen을 이으면 COM이 멈춘다(경로 E 함정 3과 같은 이유). 그래서 워커를 두 파일로 나눠 두었다.
+2. **TEXT 덤프의 `&#8212;`는 오류가 아니다.** 한글의 평문 내보내기가 cp949라 em dash(—)를 HTML 엔티티로 적을 뿐, 문서 안의 글자는 멀쩡하다. 검증 텍스트만 보고 "문자가 깨졌다"고 보고하지 말 것 — 실제 확인은 PDF 렌더로 한다.
+3. 세 포맷을 다 남기는 것이 편하다: **`.hwp`(제출·배포) · `.hwpx`(다음 수정 작업) · `.pdf`(육안 확인)**. 다음 편집은 반드시 hwpx 쪽에서 하고, 고친 뒤 .hwp를 다시 뽑는다. .hwp를 고쳐 놓고 hwpx를 갱신하지 않으면 두 파일이 갈라진다.
+
+## 경로 I — 그림 넣기 (`scripts/hwpx_embed_images.py`)
+
+2026-09-25 실증(사업기획안 41쪽에 개념도 4장). hwpx의 그림은 **세 곳이 맞아야** 보인다. 한 곳만 빠져도 한글이 조용히 빈칸으로 연다.
+
+| 위치 | 내용 |
+|---|---|
+| `BinData/<id>.png` | 이미지 바이트 |
+| `Contents/content.hpf` 의 `opf:manifest` | `<opf:item id="<id>" href="BinData/<id>.png" media-type="image/png" isEmbeded="1" hashkey="<md5 base64>"/>` |
+| `Contents/section0.xml` 의 `hp:pic` | `<hc:img binaryItemIDRef="<id>" …/>` |
+
+`META-INF/manifest.xml`은 비어 있어도 되고 **header.xml에는 등록하지 않는다** — 참조 문서를 뜯어 확인했다.
+
+```python
+from hwpx_embed_images import PicPlacer, embed_images, audit_images
+pics = PicPlacer(d, S, body_width=46400)     # d = HwpxDoc, S = 스타일 dict
+pics.place('fig1.png', 1000, 560, '[그림 1] 전체 공정 흐름')
+d.save(out)
+embed_images(out, pics.registry)             # 반드시 save() 뒤에
+print(audit_images(out))                     # {'ok': True} 여야 한다
+```
+
+- 단위는 HWPUNIT. **1inch = 7200**, 96dpi 이미지는 `px * 75`가 원본 크기(`orgSz`). 표시 크기(`sz`·`curSz`)는 본문폭 이하로.
+- `hp:pos`는 표와 같은 이유로 `treatAsChar="0"` — 쪽 경계에서 그림이 통째로 밀리지 않는다.
+- `sanitize_package`(경로 F-3)보다 **나중에** 호출한다. 순서가 뒤집히면 BinData가 날아간다.
+
+### 그림 안 글씨 크기 — 인쇄 기준으로 잡을 것 (2026-09-25 사용자 지적)
+
+가장 크게 데인 부분이다. 화면에서 멀쩡해 보이던 도면이 인쇄하면 **4.5pt**로 찍혀 못 읽었다.
+
+    인쇄 글자 크기(pt) = 폰트 px ÷ 캔버스 px 폭 × 본문폭(mm) ÷ 25.4 × 72
+
+- 본문폭 164mm(=46490 HWPUNIT)에 꽉 채우는 그림이라면 **캔버스 1000px에 본문 20px, 제목 24px**이 기준선이다(각각 9.3pt·11.2pt). 문서 본문이 12pt이므로 이보다 작으면 눈에 띄게 답답하다.
+- 캔버스를 넓히면(1180px 등) 같은 폰트가 더 작게 찍힌다. **넓은 캔버스에 많이 담는 것이 아니라, 좁은 캔버스에 적게 담아야 크게 나온다.**
+- 그래서 한 행에 3~4칸까지만 둔다. 5칸 이상이면 2행으로 쪼갠다(5단계 공정 → 3+2, 7개 존 → 4+3).
+- 확인은 눈이 아니라 PDF 실측으로: `pymupdf`로 `page.get_image_info()`의 bbox 폭(mm)을 재서 위 식에 넣는다.
+- 2행으로 쪼갤 때 **줄바꿈 연결선의 출발점을 틀리지 말 것** — 1행 마지막 상자에서 내려와 2행 첫 상자로 가야 한다. 1행 첫 상자 밑에서 화살표를 내리면 흐름이 거꾸로 읽힌다(초안에서 두 번 냈다).
+
+### 부수 발견 — `hwpx_gen`의 `lead` 는 구분자가 없다
+
+`d.b1('본문', lead='권장')`은 `권장본문`으로 붙어 나온다. 강조어와 본문 사이에 공백이 없다. 문서 전체에 퍼지므로 조립 시작부에서 감싸 둘 것.
+
+```python
+_orig = d._bullet
+d._bullet = lambda kind, t, lead=None: _orig(kind, t, (lead + ' — ') if lead else None)
+```
