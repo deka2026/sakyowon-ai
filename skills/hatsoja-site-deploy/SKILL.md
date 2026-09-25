@@ -15,6 +15,13 @@ description: 햇소자 사이트(deka2026.github.io/hatsoja, 단일 파일 SPA)�
   ```
   (긴 한글 경로에서 git이 거부한 적이 있어 Temp에 둔다)
 - **작업 전 `git fetch` + `git status -sb`** — 다른 세션이 main에 push한다
+- **다른 세션이 hub-clone을 자기 브랜치로 쓰고 있으면**(`git status -sb`가 main이 아닐 때) 그 클론을 건드리지 말고 별도 워크트리로 작업한다:
+  ```bash
+  git -C "$LOCALAPPDATA/Temp/hub-clone" fetch origin
+  git -C "$LOCALAPPDATA/Temp/hub-clone" worktree add -b feat/<주제> "$LOCALAPPDATA/Temp/claude/hub-main-wt" origin/main
+  # 작업·커밋·push·PR 후: git worktree remove --force <경로> && git branch -D feat/<주제>
+  ```
+  프리뷰 launch.json의 `--directory`도 워크트리 경로로 준다.
 - 라이브: https://sakyowon.co.kr/hatsoja/ — `Server: Caddy`. 서버 반영 스크립트 원본 `C:\Users\User\haeory-sakyowon-site\server\deploy-www.sh`(deka2026.github.io main → 루트, academy-site, sakyowon-wiki-site 순서로 clone·재배치)
 
 ## 코드 지도 (`hatsoja/index.html`, 2026-09-25 기준)
