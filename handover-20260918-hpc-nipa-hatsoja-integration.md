@@ -178,6 +178,23 @@
 - 이사장 제공 법제처 PDF `전남광주사업게획서 모음\영농형 태양광 발전사업의 활성화 및 지원에 관한 법률(법률)(제21804호)(20261217).pdf`(7쪽, 30조). 판정문 0절 조문표 확정: 제4조 관계·제7조 30년·**제8조 시군구청장 허가**·**제10조 농지법 36조 의제 1개**·제21조 정책자금. 엔진 A-6의 조문·날짜·허가권자 오기 확정. 편지 12:10(본부 `law_facts` 교체 요청 — 위키가 법률안 단계 문서를 담은 듯).
 - 실장 「제8·10조 눈 확인」 항목은 이것으로 **해소**.
 
+## 마감 (2026-09-25 저녁) — 이 핸드오버의 현재 상태 요약
+
+규격 7절 진행: **①연결 ②대조 ③상담탭 전환 완료(9/25)** / ④ draft·review 10월 1주(본부) / ⑤ 전면 / ⑥ 파일럿 마을 10월.
+
+| 계층 | 상태 |
+|---|---|
+| 서버 env | `SAKYOWON_ANTHROPIC_KEY`·`POOME_API_KEY`(43자, fp cfe33007)·`POOME_API_BASE=https://chat.solarshare.kr` 전부 투입 |
+| 서버 코드 | 미러 `deka2026/sakyowon-server` ba2c572 이후 = 원본 main 7259676 상당(어댑터·thinking 수정·compare_ask.py) |
+| 라이브 | 상담 탭 → exaone-lora(근거·배지·insufficient 버튼·참고용 문구·굵게), 서류·법령·번역 → Anthropic. 허브 6f48fef |
+| 판정 | `docs/대조시험_판정_20260925.md` 엔진 10/15·Anthropic 8/15, A-6 정답지 정정, 원문(제21804호)으로 조문 확정 |
+| 본부 대기 | 결함 1~4(자기서술 누출·잘림·조문 게이트·짧은 질문 날짜 지어냄) + `law_facts` 제정 원문 교체 + `poome_api_calls` 사교원 행 확인 |
+| 사람 대기 | 이사장: 파일럿 마을 3~5곳 / 실장: 교재·콘솔·화상 |
+
+**되돌리기**: `sudo sed -i '/^POOME_API_BASE=/d' /etc/sakyowon-api.env && sudo systemctl restart sakyowon-api`
+**재시험**: `sudo python3 /opt/sakyowon/src/tools/compare_ask.py --only A-1 A-2 A-3 A-4 A-5 A-6` (법령 6문항만, 4/6 이상이면 법령 탭 전환)
+**상태 한 줄**: `python ~/.claude/skills/hpc-project-status-check/scripts/check_status.py` → 「LINKED (backend=exaone-lora)」
+
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
 - 사용자가 **"정리해"** 라고 하면: ①핸드오버 ②스킬 ③레슨 ④위키배포 자동 수행

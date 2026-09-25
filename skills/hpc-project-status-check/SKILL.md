@@ -144,3 +144,33 @@ for f in app.py .env.example deploy-www.sh setup-apps.sh; do cmp -s ~/haeory-sak
 
 `max_tokens` 1500에 thinking 미지정이면 생각에 토큰을 다 쓰고 `text`가 빈 채 `output_tokens=1500`으로 끝난다(9/23 15건 중 4건). 단발 답변 경로는 `"thinking": {"type": "disabled"}` + 여유 있는 max_tokens. 프록시(`/api/ai`)는 클라이언트 미지정 시 `setdefault`로 주입.
 
+## 12. 대조 시험 판정 절차 (2026-09-25 확립)
+
+1. 서버에서 `sudo python3 /opt/sakyowon/src/tools/compare_ask.py` → `/opt/sakyowon/data/compare/compare_<stamp>.md`를 받는다(이사장이 `cat`으로 붙여 줌).
+2. 문항지 `docs/대조시험_문항_사교원_15문_20260919.md`의 세 칸(답 맞나·근거 실재·지어냄)으로 채점. **집계는 「핵심 요소 충족」과 「지어냄=오답 엄격」 둘 다** 낸다 — 두 기준이 갈리면 그 자체가 판정 근거다.
+3. **영역별로 본다.** 9/25 결과: 공고문·서류·절차(B·C·D) 엔진 9/9 vs Anthropic 4/9, 법령 조문(A) 엔진 1/6 vs 5/6. 「전체 승패」가 아니라 **탭 단위로 전환**(상담 탭만 엔진, 법령 탭은 Anthropic 유지)이 답이었다.
+4. **정답지도 의심한다.** A-6 「영농형태양광법은 없다」는 정답지가 틀렸다(제21804호 실재). 법령 문항은 판정 전에 법제처 원문(PDF)으로 정답지부터 다시 닫는다. 자동 채록은 법제처 본문이 스크립트라 실패 — 이사장/실장에게 PDF 다운로드를 부탁하는 게 빠르다.
+5. 엔진의 `sources`가 붙었다고 근거 있는 답이 아니다(A-2: sources 27건 중 무관 다수). 조문을 하나씩 연다.
+6. 정식 문항이 insufficient로 물러섰어도 **짧은 구어체로 다시 던진다**(「2027년 공모 마감일은?」→ 지어냄). 이용자는 정식 문장으로 묻지 않는다.
+7. 판정문은 `docs/대조시험_판정_<날짜>.md` + 사교원 허브사이트 폴더 사본 + 편지함 요지 + 이사장에게 SendUserFile.
+
+## 13. ③단계 켜기·끄기 (2026-09-25 실전)
+
+```bash
+# 켜기 — 상담 탭만 엔진으로. 서류·법령·번역은 그대로 Anthropic
+read -r -p "엔진 주소를 붙여넣고 Enter: " B; echo; grep -q '^POOME_API_BASE=' /etc/sakyowon-api.env && sudo sed -i "s|^POOME_API_BASE=.*|POOME_API_BASE=$B|" /etc/sakyowon-api.env || echo "POOME_API_BASE=$B" | sudo tee -a /etc/sakyowon-api.env >/dev/null; unset B; sudo systemctl restart sakyowon-api; curl -sS https://sakyowon.co.kr/api/ai/health
+```
+
+```bash
+# 끄기
+sudo sed -i '/^POOME_API_BASE=/d' /etc/sakyowon-api.env && sudo systemctl restart sakyowon-api
+```
+
+재시작 직후의 curl은 빈 응답일 수 있다(서비스 기동 중) — 데카 PC에서 다시 찍는다. 켜진 뒤 확인은 `check_status.py`의 VERDICT와 브라우저(데모 로그인 → AI 상담)에서 `.msg-badge` 텍스트.
+
+## 14. 함정 추가 (9/25)
+
+- **품에 키가 두 번 들어감**(86자=43×2): 터미널에서 오른쪽 클릭+Shift+Insert가 둘 다 먹은 것. 지문 대조 `sha256sum | cut -c1-8`(본부 발급값 `cfe33007`). 엔진 401 응답에 이제 `key_check{len,fp}`가 붙는다 — 그걸 그대로 본부에.
+- 엔진 401은 「키 없음/틀림/부풀음」이 같은 문구다(9/23 이전). 키 없이 보내 비교하는 진단은 이 경우엔 성립하지 않았다.
+- 엔진 답에 「품에의 자리 / 헌법 제N척추」 자기서술이 섞여 나올 수 있다(본부 결함 1, 수정 대기). 이용자 화면에 그대로 뜬다.
+
