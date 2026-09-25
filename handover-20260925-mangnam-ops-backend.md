@@ -33,8 +33,13 @@
 - [ ] **이사장님 SSH** ① `curl -fsSL https://raw.githubusercontent.com/deka2026/mangnam-coop/main/server/install-on-server.sh | sudo bash` ② `sudo bash /opt/sakyowon/src/deploy-www.sh` → `curl -s https://sakyowon.co.kr/api/mangnam/health` JSON 확인
 - [ ] 반영 후 실서버에서 관리 화면 로그인(통합계정) 1회 실증, 첫 공시 자료(정관·2025 결산) 실제 게시
 - [ ] `/opt/sakyowon/data/files/mangnam/` 첨부 폴더를 DB 백업 루틴에 포함(기존 백업 미완 항목과 함께)
-- [ ] 위키 레슨 서버 반영(4단계) — 아래 위키배포 결과 참조
+- [ ] 위키 레슨 서버 반영(4단계) — 위 deploy-www.sh 한 번이면 사이트 정적과 함께 반영됨
 - [ ] (이월) 정관 빈칸 10곳 확정 → 마을민박 운영방식 → 산업분류 세세분류 (설립 서류)
+
+## 위키배포 결과 (정리해 ④)
+- 레슨 「AI와 함께 협동조합 운영 백엔드(회계·회의록·경영공시) 만들기」 `content/망남-신활력/` + 핸드오버 아카이브 `content/메타-기록/핸드오버-2026-09-25-망남-운영-백엔드.md`
+- 1단계 v4 **7d37981** → 2단계 CI run 36093166967 success(build 잡 직후 artifact 10846586821 확보, sitemap 122) → 3단계 site master **158d9dc** push
+- 4단계 **서버 반영 대기**. 라이브 실측: `Last-Modified` 2026-09-25 04:09 GMT, sitemap `<loc>` 120, 신규 레슨 404
 
 ## 파일 위치
 | 경로 | 내용 |
