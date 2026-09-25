@@ -46,7 +46,7 @@
 
 - [ ] **서버(통합계정)에 `federation` role 값 신설 요청** — 현재 `/api/auth/me`가 주는 role에 연합회가 없어 실계정 연합회 등급은 동작 불가(데모·미리보기는 됨). 본부(지미)에 편지: 계정 role 값에 `federation` 추가 + 관리자 회원관리에서 지정 가능하게. (이월) 9/6 편지의 백엔드 4건과 함께
 - [x] **해소(13:20)**: 연합회는 조합·마을 화면 열람 전용 — PR #2 → main **7c487ce**. **라이브 반영 완료** — 2026-09-25 18:37 KST 사용자 서버 실행(`Last-Modified` 09:37:18 GMT), 라이브 소스 `requireAdmin` 5회 확인. `isAdminUser()`/`requireAdmin()` 헬퍼, 등록·삭제·편집·담당자 배정 숨김 + 함수 가드. 공모·심사(`adm/contest`) 버튼은 데모 토스트뿐이라 그대로
-- [ ] `hatsoja/manual.html`(이용안내)에 등급 4단계 설명 절 추가 — 이번엔 손대지 않음
+- [x] **해소(18:55)**: `hatsoja/manual.html`에 `#roles` 「회원등급 4단계」 절 추가 — PR #5 → main 머지. 목차·데모 4종·등급별 미리보기·문제해결 안내문 3종 갱신. 작업은 hub-clone이 다른 세션 브랜치라 **`git worktree`로 origin/main 별도 체크아웃**해서 했음(스킬에 기록). **서버 반영 대기**(사용자 `deploy-www.sh`, 확인은 라이브 manual.html에 `id="roles"`)
 - [ ] (이월) HPC 연동 후속 — handover-20260918 미완료 목록 참조
 
 ## 파일 위치
