@@ -60,4 +60,6 @@ python -X utf8 server/smoke_test.py        # 빈 DB로 시작. 한글 쿼리는 
 - 서버 반영 전에는 실사이트가 404 — 프론트는 404를 "자료 없음"으로 처리해 정적만 먼저 배포돼도 깨지지 않게 한다.
 
 ## 첫 사례
+**첫 반영 실증 2026-09-25 13:14 KST**: 이사장님이 `install-on-server.sh` + `deploy-www.sh` 실행 → `/api/mangnam/health` 200, 관리·공개 페이지 200, 공개 조회 빈 목록 정상. 스크립트는 수정 없이 한 번에 통과했다.
+
 `deka2026/mangnam-coop` `server/mangnam_api.py` (월별 회계·회의록·문서 보관·경영공시/실적 게시, 관리 화면 `/admin/*`, 공개 `/disclosure`·`/performance`). 설계 문서 `server/README.md`, 핸드오버 `handover-20260925-mangnam-ops-backend.md`.
