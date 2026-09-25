@@ -45,7 +45,7 @@
 ## 미완료 / 다음 할 일
 
 - [ ] **서버(통합계정)에 `federation` role 값 신설 요청** — 현재 `/api/auth/me`가 주는 role에 연합회가 없어 실계정 연합회 등급은 동작 불가(데모·미리보기는 됨). 본부(지미)에 편지: 계정 role 값에 `federation` 추가 + 관리자 회원관리에서 지정 가능하게. (이월) 9/6 편지의 백엔드 4건과 함께
-- [x] **해소(13:20)**: 연합회는 조합·마을 화면 열람 전용 — PR #2 → main **7c487ce**. **라이브 반영은 서버 스크립트 대기**(사용자 `bash /opt/sakyowon/src/deploy-www.sh`) — 실행 후 `requireAdmin` 문자열로 확인. `isAdminUser()`/`requireAdmin()` 헬퍼, 등록·삭제·편집·담당자 배정 숨김 + 함수 가드. 공모·심사(`adm/contest`) 버튼은 데모 토스트뿐이라 그대로
+- [x] **해소(13:20)**: 연합회는 조합·마을 화면 열람 전용 — PR #2 → main **7c487ce**. **라이브 반영 완료** — 2026-09-25 18:37 KST 사용자 서버 실행(`Last-Modified` 09:37:18 GMT), 라이브 소스 `requireAdmin` 5회 확인. `isAdminUser()`/`requireAdmin()` 헬퍼, 등록·삭제·편집·담당자 배정 숨김 + 함수 가드. 공모·심사(`adm/contest`) 버튼은 데모 토스트뿐이라 그대로
 - [ ] `hatsoja/manual.html`(이용안내)에 등급 4단계 설명 절 추가 — 이번엔 손대지 않음
 - [ ] (이월) HPC 연동 후속 — handover-20260918 미완료 목록 참조
 
@@ -66,7 +66,13 @@
 | ① 핸드오버 | 이 파일, sakyowon-ai master 1a650cc |
 | ② 스킬 | `skills/hatsoja-site-deploy/SKILL.md` 신설 + `~/.claude/skills/`에 활성화 (스크립트 없음, 코드 지도·점검 JS·배포 절차) |
 | ③ 레슨 | 사교원 위키 `content/에너지-전환/AI와-함께-사이트-회원등급을-설계하고-등급별-데모계정으로-점검하기.md` |
-| ④ 위키배포 | v4 **819b77c** → CI 36092761197 success(build 잡 직후 아티팩트 API로 수령) → site master **c183bfb**(sitemap `<loc>` 120) = 3단계 → **2026-09-25 13:15 KST 사용자가 서버 반영 = 4단계 완료**. 라이브 실측 `Last-Modified` 04:15:40 GMT, sitemap `<loc>` **122**(다른 세션 레슨 동반), 신규 문서 **200**(제목·본문 확인). **위키 배포 대기 0건** → 13:35 레슨 5단계 정정(배포 경로) v4 **1f8c562** → CI 36094945445 → site master **8200900**(sitemap 125) = 3단계, **서버 반영 대기**(햇소자 PR #2와 같은 `deploy-www.sh` 한 번으로 둘 다 반영) |
+| ④ 위키배포 | v4 **819b77c** → CI 36092761197 success(build 잡 직후 아티팩트 API로 수령) → site master **c183bfb**(sitemap `<loc>` 120) = 3단계 → **2026-09-25 13:15 KST 사용자가 서버 반영 = 4단계 완료**. 라이브 실측 `Last-Modified` 04:15:40 GMT, sitemap `<loc>` **122**(다른 세션 레슨 동반), 신규 문서 **200**(제목·본문 확인). **위키 배포 대기 0건** → 13:35 레슨 5단계 정정(배포 경로) v4 **1f8c562** → CI 36094945445 → site master **8200900**(sitemap 125) = 3단계 → **18:37 KST 서버 반영 = 4단계 완료**. 라이브 실측 sitemap **126**, 정정 문단 포함 문서 **200**. **위키 배포 대기 0건** |
+
+## 두 번째 정리 (2026-09-25 18:40)
+
+- 추가 산출: PR #2(연합회 조합·마을 열람 전용) · 배포 경로 오진 정정(스킬·핸드오버·메모리·레슨) — 모두 라이브 반영·실측 완료
+- 새 방법 없음 → 스킬 신설 대신 `hatsoja-site-deploy` 갱신(라이브 반영 3단계 표·함정 6)으로 대체
+- `%LOCALAPPDATA%\Temp\hub-clone`은 이후 다른 세션이 `feat/hatsoja-tax-automation` 브랜치로 쓰고 있음 — 재개 시 `git status -sb`부터. main 작업이면 `git checkout main && git pull`
 
 ## 약속
 - 사용자가 **"이어서 작업하자"** 라고 하면 이 핸드오버의 "미완료" 목록부터 재개
