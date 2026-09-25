@@ -74,9 +74,35 @@ v2.1 반영: **1-5 조문 대조표(13개 조항) 신설**, 지정권자 정정,
 
 사용자 요청으로 v2.0 중간본 2개(hwpx·pdf) 삭제. 원본 v1은 보존.
 
+### 6. 정리 루틴 (4종)
+
+| 단계 | 결과 |
+|---|---|
+| ①핸드오버 | 이 문서. sakyowon-ai master `a2e26a2` |
+| ②스킬 | **`hwpx-blue-annotated-doc` 신설** — probe_styles.py 스모크 테스트 통과, `.claude/skills/`에 복사 완료 |
+| ③레슨 | `content/자산기반-사회연대경제/계획서의-숫자를-검산하고-확인할-것을-파랗게-남기기.md` |
+| ④위키배포 | **3단계까지 완료, 서버 반영 대기** |
+
+위키 배포 사슬 실측:
+
+1. sakyowon-wiki v4 — PR [#2](https://github.com/deka2026/sakyowon-wiki/pull/2) 머지 `a43cdec` ✅
+2. Deploy Quartz 워크플로 run `36094592797` build/deploy 모두 success, **빌드 산출물 125쪽**(내 문서 포함 확인) ✅
+3. sakyowon-wiki-site master `12d2c83` 푸시 ✅
+4. **서버 반영 미완** — 라이브 실측: `Last-Modified: Fri, 25 Sep 2026 04:31:17 GMT`, `<loc>` **124개**, 새 문서 **404**
+
+서버에서 아래 한 줄을 돌리면 4단계가 끝난다(SSH 필요).
+
+```bash
+bash /opt/sakyowon/src/deploy-www.sh
+```
+
+반영 후 확인: `<loc>`가 124 → **125**, 새 문서 URL이 200이 되어야 한다.
+
 ---
 
 ## 미완료 / 다음 할 일
+
+- [ ] **위키 4단계 서버 반영** — `bash /opt/sakyowon/src/deploy-www.sh` 실행 후 sitemap 125·문서 200 실측
 
 - [ ] 시행령 의견서의 파란 글씨 14곳 확정 — 제출자 연명 단체, 제출 시기, 자본금 제안 금액 3개, 공시 기준 수치 2개, 설비 단가 근거
 - [ ] **행정안전부 사회연대경제제도과(044-205-3573) 사전 접촉** — 의견서 사전 제출 + 면담 요청
