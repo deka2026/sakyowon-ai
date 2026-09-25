@@ -68,3 +68,11 @@ curl -s "https://sakyowon.co.kr/mangnam-coop/village-school/youth/" | grep -c "<
 3. gh-pages 배치 시 `.nojekyll` 유지 필수 (`_next/` 디렉토리 서빙용).
 4. data.ts 세션 `id`와 폼 선택지 label은 신청 데이터에 저장됨 — label 변경은 이후 데이터부터 적용되고 기존 데이터는 옛 label 유지(관리자 집계 유의).
 5. 커밋 메시지는 한국어 제목 + `Co-Authored-By: Claude ...` 푸터.
+
+## 조합 운영 백엔드 (2026-09-25 추가)
+
+- 월별 회계·회의록·문서 보관·경영공시/실적 게시는 **레포 `server/mangnam_api.py`** (FastAPI 확장 모듈, `/api/mangnam/*`). 사교원 자체 서버 `app.py` 에 붙여 쓰며 DB·관리자 인증(키 또는 통합계정 세션)을 그대로 빌린다. 설계·데이터 모델은 `server/README.md`.
+- **서버 반영은 이사장님 SSH 한 줄**: `curl -fsSL https://raw.githubusercontent.com/deka2026/mangnam-coop/main/server/install-on-server.sh | sudo bash` (모듈 내려받기 + app.py include 블록 + 서비스 재시작). 모듈을 고치면 main 푸시 후 같은 명령 재실행.
+- 프론트: 관리 화면 `/admin/{,ledger,meetings,documents,posts}`, 공개 `/disclosure`(경영공시)·`/performance`(실적). API 클라이언트는 `app/lib/api.ts` (`NEXT_PUBLIC_API_BASE`, 기본 `/api`).
+- 로컬 검증: `SAKYOWON_ADMIN_KEY=devkey SAKYOWON_DB=C:/Users/User/mn-dev/dev.db SAKYOWON_ALLOW_ORIGINS=http://localhost:3000 python server/mangnam_api.py` + `.env.development.local` 에 `NEXT_PUBLIC_API_BASE=http://127.0.0.1:8787/api` (gitignore 됨, `next build` 는 안 읽음). API 회귀는 `python -X utf8 server/smoke_test.py`.
+- **함정**: `next dev` 가 떠 있는 채로 `npm run build` 하면 `.next` 가 덮여 dev 서버가 500(Cannot find module './52.js')을 낸다 — dev 를 멈추고 빌드하거나, 빌드 후 `.next` 지우고 dev 재시작. Windows 에서 SQLite/첨부 경로가 너무 길면(스크래치 폴더) WinError 206 — 짧은 경로(`C:\Users\User\mn-dev`)를 쓴다.
