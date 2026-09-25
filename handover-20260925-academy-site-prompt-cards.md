@@ -69,3 +69,4 @@
 - **4단계(서버 반영) 대기** — 사용자가 서버에서 `bash /opt/sakyowon/src/deploy-www.sh` 실행 필요. 실행 전 라이브 실측: `Last-Modified` 04:16 GMT, sitemap 122, 신규 문서 404
 - 확인 URL: https://sakyowon.co.kr/sakyowon-wiki/연대지능아카데미/AI-실습-안내를-프롬프트-카드로-바꾸기 (반영 후 sitemap 124·상태 200이면 완료)
 - 스킬 `academy-site-deploy`는 `C:\Users\User\.claude\skills\`에 복사·활성화 완료. 메모리(`project-sakyowon-resume`, `project-academy-site-practice-menu`) 현행화
+- **4단계 완료(2026-09-25 14:31 KST 사용자 실행)** — 라이브 실측 `Last-Modified` 04:31:17 GMT, sitemap **124**, 레슨·핸드오버 문서 모두 **200**. 위키 배포 대기 0건
