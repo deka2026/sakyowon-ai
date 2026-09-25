@@ -87,3 +87,22 @@ python -c "import io,os;t=os.environ['TEMP'];n=lambda p:io.open(p,'rb').read().r
 3. 시작 직후 진행 기록이 비어 있으면 "다음"이 재시작으로 오인될 수 있다 — 시작 시 `{action:'start'}` 로그를 남기는 현재 구조를 유지.
 4. `addLearnMsg/addSolidMsg`는 `isHtml`이 아닐 때만 `white-space:pre-wrap`. 카드 HTML을 줄바꿈 넣어 만들면 빈 줄이 생긴다.
 5. 정의되지 않은 CSS 변수(`--good` 등)를 인라인 스타일에 쓰면 배경이 사라져 흰 글자만 남는다. 정의된 것: `--accent --warn --success --sub --border --card --bg --text`.
+
+## 자격증아카데미 · SQLD 과정 데이터 다루기 (2026-09-25 20회차 기준)
+
+- 코드 위치: `/* ===== 자격증아카데미: SQLD 과정 ===== */` 아래 `var SQLD_KEY = 'sqld_v2'` · `var SQLD_MODULES = [...]` · 렌더 `renderSqldHome` · 학습 `sqldStart → sqldShowReview(보완) → sqldEnterLearn → sqldStartQuiz → sqldFinish`.
+- 모듈 형식: `{no, part(1|2), title, intro, yt:[검색어 2개], concepts:[{topic,title,html}], quiz:[{topic, q, c:[4], a:0~3, exp}]}`. `html`은 `<ul><li>`, `<` 는 `&lt;`로. 문자열은 작은따옴표, 안의 따옴표는 `\'`.
+- **문항 `topic`은 같은 회차 `concepts`의 `topic`과 정확히 일치**해야 한다. 보완 학습이 `sqldFindConcept(topic)`으로 카드를 찾기 때문에 어긋나면 약점 카드가 비어 나온다.
+- 진행 기록은 localStorage `SQLD_KEY`에 `{done:{회차:{s,t,d}}, weak:{topic:n}, wrong:[{m,qi}]}`. **회차 번호나 문항 순서를 바꾸면 `wrong`의 `{m,qi}`가 어긋나므로 키를 올린다**(v1→v2처럼). 문항을 끝에 추가만 하면 키 유지 가능.
+- 화면 하드코딩: 과정 홈 "완료 회차 / N", "학습 모듈 (N회차 × 10분)", "확인 문제 N문항", 학습 화면 "확인 문제 풀기 (N문항)". 퀴즈 헤더의 총 문항 수는 `#sq-qtotal`로 동적.
+- 편집 절차: 데이터를 `%TEMP%\acad_patch\sqld_modules.js`에 `var SQLD_MODULES = [...]` 형태로 따로 쓰고 → 아래 검증 → 파이썬으로 `var SQLD_MODULES = [` ~ `];\r\n\r\n/* ---- 저장 ---- */` 구간을 바이트 치환(CRLF 유지).
+  ```bash
+  node --check sqld_modules.js && node -e "
+  const M=new Function(require('fs').readFileSync('sqld_modules.js','utf8')+';return SQLD_MODULES;')();let bad=[];
+  M.forEach((m,i)=>{if(m.no!==i+1)bad.push('no '+m.no);if(m.quiz.length!==6)bad.push(m.no+' quiz');
+   const t=new Set(m.concepts.map(c=>c.topic));m.quiz.forEach((q,j)=>{if(q.c.length!==4||new Set(q.c).size!==4)bad.push(m.no+'-'+j+' choices');
+   if(!(q.a>=0&&q.a<4))bad.push(m.no+'-'+j+' answer');if(!t.has(q.topic))bad.push(m.no+'-'+j+' topic '+q.topic);});});
+  console.log(M.length,'modules',bad.length?bad.join(' | '):'ALL OK')"
+  ```
+- 흐름 점검 JS(로컬 프리뷰, 로그인 불필요): `sqldStart(1); sqldStartQuiz(); /* 첫 문제 오답 */ sqldAnswer((SQLD_MODULES[0].quiz[0].a+1)%4); sqldNextQuestion(); …; sqldStart(2)` → `#sq-review-area`가 보이고 `#sq-review-retry`에 재시도 문항이 있으면 정상. `sqldRetryAnswer(0, 정답)` 후 `weak`가 줄어야 한다.
+- 문항은 전부 가상 문제(기출 비공개). 과정 홈의 "문제에 대한 안내" 상자를 지우지 말 것.
