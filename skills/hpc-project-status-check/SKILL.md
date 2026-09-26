@@ -174,3 +174,9 @@ sudo sed -i '/^POOME_API_BASE=/d' /etc/sakyowon-api.env && sudo systemctl restar
 - 엔진 401은 「키 없음/틀림/부풀음」이 같은 문구다(9/23 이전). 키 없이 보내 비교하는 진단은 이 경우엔 성립하지 않았다.
 - 엔진 답에 「품에의 자리 / 헌법 제N척추」 자기서술이 섞여 나올 수 있다(본부 결함 1, 수정 대기). 이용자 화면에 그대로 뜬다.
 
+
+## 15. 함정 추가 (9/26): Git Bash의 curl은 한글을 CP949로 보낸다
+
+`curl -d "{\"prompt\":\"한글…\"}"`를 이 PC의 Git Bash에서 돌리면 본문이 **CP949 바이트**로 나간다. 엔진은 깨진 질문을 받고 전부 `insufficient`로 답한다(9/25 저녁 8건이 tokens_in 3194로 똑같았다. 본부에 헛 복구 요청을 보냈다가 정정). 한글이 든 시험 호출은 파이썬 `urllib`로 `json.dumps(..., ensure_ascii=False).encode('utf-8')`를 보내거나, `--data-binary @utf8파일`로 보낸다. 판정 전에 같은 질문을 **3회** 보낸다 — 엔진의 insufficient 판정은 같은 문장에서도 흔들린다(9/26 12문×3회 34/36).
+
+시험 호출기: `python ~/.claude/skills/hpc-project-status-check/scripts/ask_probe.py --live-presets -n 3` — 라이브 햇소자 `#/mem/ask` 예시 질문 12개를 UTF-8로 3회씩 보내 `3/3 src=9 O:req_… | 질문`으로 찍는다. `-q "질문"`으로 개별 질문, `--json`으로 편지함용 표.

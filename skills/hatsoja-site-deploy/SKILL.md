@@ -40,6 +40,8 @@ description: 햇소자 사이트(deka2026.github.io/hatsoja, 단일 파일 SPA)�
 | 편의 띠·FAB | `updateConvenienceUI(scope, page)` — 체험 띠 `#demoBar`(등급 전환 버튼 `#demoSwitch`), 미리보기 띠 `#previewBar` |
 | 메뉴 설명(툴팁·AI 맥락) | `const MENU_DESC` — adm 대시보드는 키 `admDashboard` |
 | 페이지 본문 | `renderMemberPage(page)` switch (mem/*) · `renderAdminPage(page)` switch (adm/*) |
+| AI 상담 | `memChat()` + `sendChat()`(입력 `#chatIn`·말풍선 `#chatBody` → `/api/ai/chat`, 서버가 GPU 엔진으로) · 부가 표시 `chatMetaHtml()` |
+| GPU 엔진 질문 모음 | `#/mem/ask` = `memAsk()` + `ASK_GROUPS`(주제 4묶음 × 3문) + `askPreset(q)`. 같은 `chatIn`/`chatBody` id를 써서 `sendChat` 공용. 권한은 `canAccess`에서 `ask`→`chat`으로 취급 |
 | 라우트 | `#/pub/<view>` · `#/mem/<page>` · `#/adm/<page>` — 뷰는 `<section class="view" id="v-pub-*">`, 로그인 화면은 `#v-app` 하나 |
 
 ### 메뉴를 옮기거나 등급을 바꿀 때
@@ -107,3 +109,4 @@ curl -s "https://sakyowon.co.kr/hatsoja/index.html?v=$(date +%s)" | grep -c "<�
 4. 서버 `/api/auth/me`의 role에는 아직 `federation`이 없다 — 실계정 연합회는 본부가 role 값을 줘야 동작
 5. 사본을 `D:\...\햇빛발전협동조합 업무자동화 사이트\`에 남길 때 `hatsoja/` 폴더째 복사하면 파일로 열어도 데모 모드로 동작한다
 6. 연합회는 `adm/villages`를 **열람 전용**으로 본다(2026-09-25 PR #2) — 편집 진입점은 `isAdminUser()`/`requireAdmin()`로 막는다. 관리 화면을 연합회에 새로 열 때 같은 가드를 붙일 것
+7. **`ASK_GROUPS` 예시 질문을 바꿀 땐 엔진에 UTF-8로 3회씩 재 본다** — `python ~/.claude/skills/hpc-project-status-check/scripts/ask_probe.py -q "새 질문" -n 3`. 짧은 구어체는 엔진이 insufficient로 물러서기 쉽고(9/26 6개 교체, PR #6), 같은 문장도 흔들린다. 대조 시험 정식 문장이 가장 안정적이다. Git Bash `curl -d "한글"`로 재면 CP949로 나가 전부 실패한다.
