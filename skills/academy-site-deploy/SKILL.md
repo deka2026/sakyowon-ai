@@ -41,6 +41,7 @@ python -c "import io,os;t=os.environ['TEMP'];n=lambda p:io.open(p,'rb').read().r
 
 | 찾을 것 | 위치·이름 |
 |---|---|
+| **사이드 메뉴** | `SIDEBAR_MENUS`(섹션: title·roles·lockedFor·admin·items `[id,이름,굵게]`·links) + `renderSidebar()`. 관리자 미리보기 `sidebarPreview('user'|'guest'|null)`, 실제 역할은 `isRealAdmin()`. 메뉴 추가·이동은 이 표만 |
 | 페이지 전환 | `go(id, link)` — `<div id="..." class="page">`. 실습시작 `course-practice`, 학습개요 `course-overview`, 연대지능 학습 가이드 `solidarity-unified` |
 | 로그인 판정 | `getSession()` / `currentRole()` (SESSION_KEY `academy_session`) |
 | **실습시작 15단계** | `LEARN_STEPS`(id·title·desc·guide·check; guide는 화면에 안 나옴) / `LEARN_PRECHECKS`(미사용) / **`LEARN_PROMPTS`**(id → `{where, text}`) / `LEARN_WHERE`(`web`·`code` 라벨) |
