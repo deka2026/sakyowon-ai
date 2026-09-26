@@ -59,3 +59,4 @@ SQLD 과정은 같은 날 병행 세션이 신설한 것(`5fde02d`, 10회차·�
 - **4단계(서버 반영) 대기** — `bash /opt/sakyowon/src/deploy-www.sh`. 실행 전 라이브: `Last-Modified` 09:48 GMT, sitemap 126
 - 확인 URL: https://sakyowon.co.kr/sakyowon-wiki/연대지능아카데미/AI와-함께-자격증-학습과정을-20회차로-설계하고-검증하기 (반영 후 sitemap 128·200이면 완료)
 - 함정 기록: 같은 날 병행 세션이 v4·site master 양쪽에 push하므로 **두 레포 모두 fetch 후 behind 확인**. site 레포는 내용 전체 치환이라 rebase 대신 reset 후 재적용이 맞다
+- **4단계 완료(2026-09-26 11:27 KST 사용자 실행)** — 라이브 `Last-Modified` 02:27 GMT, sitemap **128**, 레슨·핸드오버 200. 위키 배포 대기 0건
