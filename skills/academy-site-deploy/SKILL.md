@@ -106,3 +106,4 @@ python -c "import io,os;t=os.environ['TEMP'];n=lambda p:io.open(p,'rb').read().r
   ```
 - 흐름 점검 JS(로컬 프리뷰, 로그인 불필요): `sqldStart(1); sqldStartQuiz(); /* 첫 문제 오답 */ sqldAnswer((SQLD_MODULES[0].quiz[0].a+1)%4); sqldNextQuestion(); …; sqldStart(2)` → `#sq-review-area`가 보이고 `#sq-review-retry`에 재시도 문항이 있으면 정상. `sqldRetryAnswer(0, 정답)` 후 `weak`가 줄어야 한다.
 - 문항은 전부 가상 문제(기출 비공개). 과정 홈의 "문제에 대한 안내" 상자를 지우지 말 것.
+- **한국어 리터럴이 든 파이썬 치환은 파일로 실행**: `python - <<'EOF'` 히어독은 stdin이 cp949로 읽혀 한국어 매칭이 실패하거나 `\U` 이스케이프 오류가 나는 경우가 있다(2026-09-26 재현). `%TEMP%\acad_patch\*.py`로 저장해 `python 파일.py`. 파일 상단 `# -*- coding: utf-8 -*-`.
